@@ -30,6 +30,7 @@ public class SettingsDialog {
 
     public interface OnSettingsChangedListener {
         void onUpscalerChanged(EmulatorRenderer.Upscaler upscaler);
+        void onScalingModeChanged(EmulatorRenderer.ScalingMode mode);
         void onTouchModeChanged(FrogEmuSettings.TouchMode mode);
         void onInputProfileChanged(com.lemonsquad.froggba.input.InputProfile profile);
         void onLinkModeChanged(LinkManager.Mode mode);

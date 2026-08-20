@@ -7,35 +7,62 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scaling &amp; Shaders"
+        android:text="Shaders &amp; Display Filters"
         android:textColor="#00FF66"
         android:textSize="14sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
     <RadioGroup
-        android:id="@+id/rg_upscaler"
+        android:id="@+id/rg_shader_filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <RadioButton
-            android:id="@+id/rb_upscaler_nearest"
+            android:id="@+id/rb_shader_nearest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nearest (Pixel-Perfect 1:1 Reference Baseline)"
+            android:text="Pixel-Perfect Nearest (Raw GBA Colors &amp; Hard Edges)"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="4dp" />
 
         <RadioButton
-            android:id="@+id/rb_upscaler_scale2x"
+            android:id="@+id/rb_shader_lcd_grid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Scale2x (Sub-pixel Retro Edge Scaling)"
+            android:text="Authentic GBA LCD Matrix Grid"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_shader_scanlines"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scanlines (Retro Handheld / CRT Lines)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_shader_scale2x"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clean EPX / Scale2x Pixel Expansion"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_shader_bilinear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bilinear (Smooth Edge Interpolation)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
     </RadioGroup>
 
     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="12dp" />
@@ -43,19 +70,62 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Geometry &amp; Viewport"
+        android:text="Scaling &amp; Viewport Geometry"
         android:textColor="#00FF66"
         android:textSize="14sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
-    <CheckBox
-        android:id="@+id/chk_integer_scaling"
+    <RadioGroup
+        android:id="@+id/rg_scaling_mode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Maintain Strict 3:2 Aspect Ratio on RG556 OLED"
-        android:textColor="#FFFFFF"
-        android:checked="true"
-        android:textSize="13sp" />
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_scale_fit_3_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aspect Fit 3:2 (RG556 Full Height — 1620×1080)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_scale_int_max"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Integer Scaling 6× (Pixel Perfect Uniform Grid — 1440×960)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_scale_int_5x"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Integer Scaling 5× (1200×800)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_scale_int_4x"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Integer Scaling 4× (960×640)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_scale_fullscreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Full Screen Stretch (16:9 — 1920×1080)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+    </RadioGroup>
 
 </LinearLayout>

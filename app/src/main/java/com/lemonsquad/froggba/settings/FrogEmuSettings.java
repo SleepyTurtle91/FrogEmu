@@ -63,12 +63,22 @@ public class FrogEmuSettings {
         mPrefs.edit().putString(KEY_UPSCALER, upscaler.name()).apply();
     }
 
-    public boolean isIntegerScaling() {
-        return mPrefs.getBoolean(KEY_INTEGER_SCALING, false);
+    public EmulatorRenderer.ScalingMode getScalingMode() {
+        String name = mPrefs.getString("display_scaling_mode", EmulatorRenderer.ScalingMode.FIT_3_2.name());
+        try {
+            return EmulatorRenderer.ScalingMode.valueOf(name);
+        } catch (Exception e) {
+            return EmulatorRenderer.ScalingMode.FIT_3_2;
+        }
     }
 
-    public void setIntegerScaling(boolean enabled) {
-        mPrefs.edit().putBoolean(KEY_INTEGER_SCALING, enabled).apply();
+    public void setScalingMode(EmulatorRenderer.ScalingMode mode) {
+        mPrefs.edit().putString("display_scaling_mode", mode.name()).apply();
+    }
+
+    public boolean isIntegerScaling() {
+        return getScalingMode() != EmulatorRenderer.ScalingMode.FIT_3_2 &&
+               getScalingMode() != EmulatorRenderer.ScalingMode.FULLSCREEN;
     }
 
     // ── Controls & Input Profile ────────────────────────────────────

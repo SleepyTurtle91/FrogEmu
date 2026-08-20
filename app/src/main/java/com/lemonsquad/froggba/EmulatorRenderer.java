@@ -17,11 +17,28 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "FrogEmu_Render";
 
+    public enum ScalingMode {
+        FIT_3_2("Aspect Fit (3:2 Aspect Ratio)"),
+        INTEGER_MAX("Integer Scaling (6× Pixel Perfect - 1440×960)"),
+        INTEGER_5X("Integer Scaling (5× - 1200×800)"),
+        INTEGER_4X("Integer Scaling (4× - 960×640)"),
+        FULLSCREEN("Stretch (16:9 Full Screen)");
+
+        private final String label;
+        ScalingMode(String label) { this.label = label; }
+        public String getLabel() { return label; }
+    }
+
     public enum Upscaler {
-        NEAREST,
-        SCALE2X,
-        HQ2X,
-        XBRZ
+        NEAREST("Pixel-Perfect (Crisp Native 1:1 Color)"),
+        LCD_GRID("Authentic GBA LCD Sub-Pixel Grid"),
+        SCANLINES("Handheld / CRT Scanlines"),
+        SCALE2X("Clean EPX / Scale2x Pixel Expansion"),
+        BILINEAR("Bilinear (Smooth Edge Interpolation)");
+
+        private final String label;
+        Upscaler(String label) { this.label = label; }
+        public String getLabel() { return label; }
     }
 
     private volatile ByteBuffer mFrameBuffer;
@@ -34,8 +51,13 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
     private final FloatBuffer mVertices;
     private final FloatBuffer mTexCoords;
 
+    private ScalingMode mScalingMode = ScalingMode.FIT_3_2;
     private Upscaler mCurrentUpscaler = Upscaler.NEAREST;
     private volatile boolean mUpscalerChanged = false;
+    private volatile boolean mViewportChanged = false;
+
+    private int mSurfaceWidth = 1920;
+    private int mSurfaceHeight = 1080;
 
     private static final float[] QUAD_COORDS = {
         -1.0f,  1.0f,
@@ -62,6 +84,7 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "  vTexCoord = aTexCoord;\n" +
         "}\n";
 
+    // Strict 1:1 Pixel-Perfect Nearest
     private static final String FRAGMENT_NEAREST =
         "precision mediump float;\n" +
         "uniform sampler2D uTexture;\n" +
@@ -70,6 +93,34 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
         "}\n";
 
+    // Authentic GBA LCD Sub-Pixel Grid
+    private static final String FRAGMENT_LCD_GRID =
+        "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTexCoord;\n" +
+        "const vec2 texSize = vec2(240.0, 160.0);\n" +
+        "void main() {\n" +
+        "  vec4 color = texture2D(uTexture, vTexCoord);\n" +
+        "  vec2 grid = fract(vTexCoord * texSize);\n" +
+        "  float border = step(0.92, grid.x) + step(0.92, grid.y);\n" +
+        "  color.rgb *= (1.0 - 0.20 * min(border, 1.0));\n" +
+        "  gl_FragColor = color;\n" +
+        "}\n";
+
+    // Scanlines
+    private static final String FRAGMENT_SCANLINES =
+        "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTexCoord;\n" +
+        "const vec2 texSize = vec2(240.0, 160.0);\n" +
+        "void main() {\n" +
+        "  vec4 color = texture2D(uTexture, vTexCoord);\n" +
+        "  float line = sin(vTexCoord.y * texSize.y * 3.14159265);\n" +
+        "  color.rgb *= (0.88 + 0.12 * line * line);\n" +
+        "  gl_FragColor = color;\n" +
+        "}\n";
+
+    // Clean EPX / Scale2x without fuzzy color-smearing
     private static final String FRAGMENT_SCALE2X =
         "precision mediump float;\n" +
         "uniform sampler2D uTexture;\n" +
@@ -86,26 +137,20 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "  vec4 E = texture2D(uTexture, pc);\n" +
         "  vec4 F = texture2D(uTexture, pc + vec2(ps.x, 0.0));\n" +
         "  vec4 H = texture2D(uTexture, pc + vec2(0.0, ps.y));\n" +
-        "  bool b_neq_h = distance(B, H) > 0.001;\n" +
-        "  bool d_neq_f = distance(D, F) > 0.001;\n" +
         "  vec4 outColor = E;\n" +
-        "  if (b_neq_h && d_neq_f) {\n" +
+        "  if (B != H && D != F) {\n" +
         "      if (p_fract.x < 0.5 && p_fract.y < 0.5) {\n" +
-        "          if (distance(D, B) < 0.001) outColor = D;\n" +
+        "          if (D == B) outColor = D;\n" +
         "      } else if (p_fract.x >= 0.5 && p_fract.y < 0.5) {\n" +
-        "          if (distance(B, F) < 0.001) outColor = F;\n" +
+        "          if (B == F) outColor = F;\n" +
         "      } else if (p_fract.x < 0.5 && p_fract.y >= 0.5) {\n" +
-        "          if (distance(D, H) < 0.001) outColor = D;\n" +
+        "          if (D == H) outColor = D;\n" +
         "      } else {\n" +
-        "          if (distance(H, F) < 0.001) outColor = F;\n" +
+        "          if (H == F) outColor = F;\n" +
         "      }\n" +
         "  }\n" +
         "  gl_FragColor = outColor;\n" +
         "}\n";
-
-    // HQ2x / xBRZ placeholders — same as Nearest until implemented
-    private static final String FRAGMENT_HQ2X = FRAGMENT_NEAREST;
-    private static final String FRAGMENT_XBRZ = FRAGMENT_NEAREST;
 
     // ── Constructor ─────────────────────────────────────────────────
 
@@ -134,6 +179,15 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
     public Upscaler getCurrentUpscaler() { return mCurrentUpscaler; }
 
+    public void setScalingMode(ScalingMode mode) {
+        if (mScalingMode != mode) {
+            mScalingMode = mode;
+            mViewportChanged = true;
+        }
+    }
+
+    public ScalingMode getScalingMode() { return mScalingMode; }
+
     // ── GLSurfaceView.Renderer ──────────────────────────────────────
 
     @Override
@@ -147,10 +201,8 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         mTextureId = textures[0];
 
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        updateTextureFiltering();
+
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
@@ -162,27 +214,89 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-        float targetRatio = 240.0f / 160.0f; // 3:2
-        float screenRatio = (float) width / height;
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+        applyViewport();
+    }
 
-        int vw, vh, vx = 0, vy = 0;
-        if (screenRatio > targetRatio) {
-            vh = height;
-            vw = (int) (height * targetRatio);
-            vx = (width - vw) / 2;
-        } else {
-            vw = width;
-            vh = (int) (width / targetRatio);
-            vy = (height - vh) / 2;
+    private void applyViewport() {
+        int width = mSurfaceWidth;
+        int height = mSurfaceHeight;
+        int vw, vh, vx, vy;
+
+        switch (mScalingMode) {
+            case INTEGER_MAX: {
+                // Maximum whole integer multiplier that fits screen
+                int scale = Math.max(1, Math.min(width / 240, height / 160));
+                vw = 240 * scale;
+                vh = 160 * scale;
+                vx = (width - vw) / 2;
+                vy = (height - vh) / 2;
+                break;
+            }
+            case INTEGER_5X: {
+                vw = 240 * 5; // 1200
+                vh = 160 * 5; // 800
+                vx = (width - vw) / 2;
+                vy = (height - vh) / 2;
+                break;
+            }
+            case INTEGER_4X: {
+                vw = 240 * 4; // 960
+                vh = 160 * 4; // 640
+                vx = (width - vw) / 2;
+                vy = (height - vh) / 2;
+                break;
+            }
+            case FULLSCREEN: {
+                vw = width;
+                vh = height;
+                vx = 0;
+                vy = 0;
+                break;
+            }
+            case FIT_3_2:
+            default: {
+                float targetRatio = 240.0f / 160.0f; // 3:2
+                float screenRatio = (float) width / height;
+                if (screenRatio > targetRatio) {
+                    vh = height;
+                    vw = (int) (height * targetRatio);
+                    vx = (width - vw) / 2;
+                    vy = 0;
+                } else {
+                    vw = width;
+                    vh = (int) (width / targetRatio);
+                    vx = 0;
+                    vy = (height - vh) / 2;
+                }
+                break;
+            }
         }
+
         GLES20.glViewport(vx, vy, vw, vh);
+        Log.i(TAG, String.format("Viewport applied: mode=%s, rect=[%d, %d, %d, %d]", mScalingMode, vx, vy, vw, vh));
+    }
+
+    private void updateTextureFiltering() {
+        if (mTextureId == 0) return;
+        int filter = (mCurrentUpscaler == Upscaler.BILINEAR) ? GLES20.GL_LINEAR : GLES20.GL_NEAREST;
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, filter);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, filter);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         if (mUpscalerChanged) {
             compileCurrentProgram();
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
+            updateTextureFiltering();
             mUpscalerChanged = false;
+        }
+
+        if (mViewportChanged) {
+            applyViewport();
+            mViewportChanged = false;
         }
 
         ByteBuffer fb = mFrameBuffer;
@@ -218,10 +332,12 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
     private void compileCurrentProgram() {
         String frag;
         switch (mCurrentUpscaler) {
-            case SCALE2X: frag = FRAGMENT_SCALE2X; break;
-            case HQ2X:    frag = FRAGMENT_HQ2X;    break;
-            case XBRZ:    frag = FRAGMENT_XBRZ;    break;
-            default:      frag = FRAGMENT_NEAREST;  break;
+            case LCD_GRID:  frag = FRAGMENT_LCD_GRID;  break;
+            case SCANLINES: frag = FRAGMENT_SCANLINES; break;
+            case SCALE2X:   frag = FRAGMENT_SCALE2X;   break;
+            case BILINEAR:  frag = FRAGMENT_NEAREST;   break; // uses GL_LINEAR
+            case NEAREST:
+            default:        frag = FRAGMENT_NEAREST;   break;
         }
 
         if (mProgram != 0) GLES20.glDeleteProgram(mProgram);
@@ -236,7 +352,6 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         GLES20.glShaderSource(shader, code);
         GLES20.glCompileShader(shader);
 
-        // Error check
         int[] status = new int[1];
         GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, status, 0);
         if (status[0] == 0) {

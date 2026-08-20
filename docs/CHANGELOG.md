@@ -4,6 +4,27 @@ All notable changes to **FrogEmu** are documented in this file.
 
 ---
 
+## [v1.3.0] — 2026-08-20
+
+### Added
+- **Phase 4: Display Scaling & Filter Framework**:
+  - **Pixel-Perfect Integer Scaling Viewports**:
+    - `Aspect Fit 3:2` (1620×1080 on 16:9 RG556 display)
+    - `Integer Scaling 6×` (1440×960 — Uniform pixel grid, zero shimmer/distortion)
+    - `Integer Scaling 5×` (1200×800)
+    - `Integer Scaling 4×` (960×640)
+    - `Full Screen Stretch` (1920×1080)
+  - **Modular Shaders & Display Filters**:
+    - `Pixel-Perfect Nearest` (Strict raw GBA pixels, 100% color accuracy, hard edges)
+    - `Authentic GBA LCD Matrix Grid` (Sub-pixel LCD grid matrix)
+    - `Scanlines` (Retro handheld & CRT scanline shader)
+    - `Clean EPX / Scale2x` (Pure color-matching pixel expansion without oil-paint blur)
+    - `Bilinear` (Smooth edge interpolation)
+  - **Settings UI Control Plane**:
+    - Redesigned **Settings ⚙️ → Display & Video** panel with dedicated Shader and Viewport radio groups.
+
+---
+
 ## [v1.2.2] — 2026-08-20
 
 ### Added

@@ -84,7 +84,8 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
         mGLView = new GLSurfaceView(this);
         mGLView.setEGLContextClientVersion(2);
         mRenderer = new EmulatorRenderer();
-        mRenderer.setUpscaler(mSettings.getUpscaler()); // Load saved shader
+        mRenderer.setUpscaler(mSettings.getUpscaler());       // Load saved shader
+        mRenderer.setScalingMode(mSettings.getScalingMode()); // Load saved scaling geometry
         mGLView.setRenderer(mRenderer);
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
@@ -166,6 +167,13 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     public void onUpscalerChanged(EmulatorRenderer.Upscaler upscaler) {
         if (mRenderer != null) {
             mRenderer.setUpscaler(upscaler);
+        }
+    }
+
+    @Override
+    public void onScalingModeChanged(EmulatorRenderer.ScalingMode mode) {
+        if (mRenderer != null) {
+            mRenderer.setScalingMode(mode);
         }
     }
 
