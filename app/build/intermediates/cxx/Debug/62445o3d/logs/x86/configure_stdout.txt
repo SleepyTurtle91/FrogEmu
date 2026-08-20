@@ -1,3 +1,0 @@
--- Configuring done
--- Generating done
--- Build files have been written to: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86
