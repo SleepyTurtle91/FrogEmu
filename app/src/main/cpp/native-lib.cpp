@@ -200,11 +200,15 @@ Java_com_lemonsquad_froggba_EmulationThread_stepFrameJNI(
 extern "C" JNIEXPORT void JNICALL
 Java_com_lemonsquad_froggba_EmulationThread_setLinkConfigJNI(
         JNIEnv*, jobject, jboolean connected, jint deviceId, jint numDevices) {
-    g_linkDriver.isConnected = connected;
-    g_linkDriver.deviceId = deviceId;
-    g_linkDriver.connectedDevices = numDevices;
-    LOGI("Link Config: connected=%d, deviceId=%d, numDevices=%d",
-         (int)connected, (int)deviceId, (int)numDevices);
+    if (g_linkDriver.isConnected != (bool)connected ||
+        g_linkDriver.deviceId != deviceId ||
+        g_linkDriver.connectedDevices != numDevices) {
+        g_linkDriver.isConnected = connected;
+        g_linkDriver.deviceId = deviceId;
+        g_linkDriver.connectedDevices = numDevices;
+        LOGI("Link Config updated: connected=%d, deviceId=%d, numDevices=%d",
+             (int)connected, (int)deviceId, (int)numDevices);
+    }
 }
 
 extern "C" JNIEXPORT jint JNICALL

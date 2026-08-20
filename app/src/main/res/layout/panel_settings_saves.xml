@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save States &amp; Battery SRAM"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/txt_save_directory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SRAM Path: /data/user/0/com.lemonsquad.froggba/files/"
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="12dp" />
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save State Slots"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phase 8 Feature: Instant save states, multi-slot manager, and preview thumbnail snapshots."
+        android:textColor="#777777"
+        android:textSize="12sp" />
+
+</LinearLayout>

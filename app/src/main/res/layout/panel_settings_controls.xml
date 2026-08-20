@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hardware Controller"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/txt_hardware_controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Detected: Anbernic RG556 Gamepad ✅"
+        android:textColor="#00FF88"
+        android:textSize="13sp"
+        android:layout_marginBottom="12dp" />
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Touch Screen Controls"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/rg_touch_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_touch_auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Auto-Hide (Hide overlay when physical gamepad is present)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+
+        <RadioButton
+            android:id="@+id/rb_touch_always"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Always Show (Keep on-screen buttons visible)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+
+        <RadioButton
+            android:id="@+id/rb_touch_never"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Never Show (Pure hardware gamepad only)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp" />
+    </RadioGroup>
+
+</LinearLayout>

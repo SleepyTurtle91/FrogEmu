@@ -2,234 +2,92 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#DD121212"
-    android:padding="16dp">
+    android:orientation="horizontal"
+    android:background="#EE101010">
 
-    <!-- ── Header ─────────────────────────────────────────────── -->
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp">
+    <!-- ── Left Sidebar: Category Navigation ──────────────────── -->
+    <LinearLayout
+        android:layout_width="210dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FF181818"
+        android:padding="12dp">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🐸 FroggBA Settings"
-            android:textColor="#00FF66"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true" />
-
-        <Button
-            android:id="@+id/btn_close_settings"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:text="✕"
-            android:textColor="#FFFFFF"
-            android:background="#33FFFFFF"
-            android:textSize="16sp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text="🐸 FroggBA ⚙️"
+            android:textColor="#00FF66"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:layout_marginLeft="6dp" />
 
-            <!-- ── 🖥️ Display Section ─────────────────────────────── -->
-            <TextView
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:id="@+id/sidebar_category_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="🖥️ DISPLAY &amp; SCALING"
-                android:textColor="#88FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="6dp" />
+                android:orientation="vertical" />
+        </ScrollView>
+    </LinearLayout>
 
-            <RadioGroup
-                android:id="@+id/rg_upscaler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+    <!-- Divider -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="#33FFFFFF" />
 
-                <RadioButton
-                    android:id="@+id/rb_upscaler_nearest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nearest (Pixel-Perfect 1:1)"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginRight="16dp" />
+    <!-- ── Right Detail Pane: Dynamic Content ─────────────────── -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-                <RadioButton
-                    android:id="@+id/rb_upscaler_scale2x"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Scale2x (Sub-pixel Edge Scaling)"
-                    android:textColor="#FFFFFF" />
-            </RadioGroup>
-
-            <!-- ── 🎮 Controls Section ────────────────────────────── -->
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="10dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🎮 CONTROLS"
-                android:textColor="#88FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+        <!-- Top Header: Category Title + Close Button -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
 
             <TextView
-                android:id="@+id/txt_gamepad_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Hardware Controller: RG556 / Gamepad Active ✅"
-                android:textColor="#00FF88"
-                android:textSize="12sp"
-                android:layout_marginBottom="6dp" />
-
-            <RadioGroup
-                android:id="@+id/rg_touch_mode"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rb_touch_auto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Auto-Hide on Gamepad"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginRight="12dp" />
-
-                <RadioButton
-                    android:id="@+id/rb_touch_always"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Always Show"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginRight="12dp" />
-
-                <RadioButton
-                    android:id="@+id/rb_touch_never"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Never Show"
-                    android:textColor="#FFFFFF" />
-            </RadioGroup>
-
-            <!-- ── 🔊 Audio Section ──────────────────────────────── -->
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="10dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🔊 AUDIO"
-                android:textColor="#88FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
-
-            <CheckBox
-                android:id="@+id/chk_audio_enabled"
+                android:id="@+id/txt_active_category_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enable Audio Output (16-bit PCM @ 32.7kHz)"
+                android:text="Category Title"
                 android:textColor="#FFFFFF"
-                android:checked="true" />
-
-            <!-- ── 🔗 Link Multiplayer Section ───────────────────── -->
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="10dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="🔗 LINK MULTIPLAYER"
-                android:textColor="#88FFFFFF"
-                android:textSize="12sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="6dp" />
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true" />
 
-            <RadioGroup
-                android:id="@+id/rg_link_mode"
+            <Button
+                android:id="@+id/btn_close_settings"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:text="✕"
+                android:textColor="#FFFFFF"
+                android:background="#33FFFFFF"
+                android:textSize="15sp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <FrameLayout
+                android:id="@+id/panel_content_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/rb_link_off"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Off (Single Player)"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginRight="12dp" />
-
-                <RadioButton
-                    android:id="@+id/rb_link_loopback"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Loopback Test (2P Virtual)"
-                    android:textColor="#FFFFFF" />
-            </RadioGroup>
-
-            <!-- Link Diagnostics Panel -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="#22000000"
-                android:padding="8dp"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Link Diagnostics"
-                    android:textColor="#AAAAAA"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/txt_link_diagnostics"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="State: DISCONNECTED\nTransfers: 0\nErrors: 0"
-                    android:textColor="#00DDFF"
-                    android:fontFamily="monospace"
-                    android:textSize="11sp"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
-
-            <!-- ── ℹ️ About Section ──────────────────────────────── -->
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="10dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="ℹ️ ABOUT FROGGBA"
-                android:textColor="#88FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="FroggBA v1.0 • Built on mGBA Core v0.11-dev\nEngineered for Anbernic RG556 • LemonSquad"
-                android:textColor="#888888"
-                android:textSize="11sp" />
-
-        </LinearLayout>
-    </ScrollView>
+                android:layout_height="wrap_content" />
+        </ScrollView>
+    </LinearLayout>
 
 </LinearLayout>

@@ -53,8 +53,11 @@ public class EmulationThread extends Thread {
     private final short[] mAudioScratch = new short[2048 * 2]; // stereo
     private AudioThread mAudioThread;
 
-    // ── Link Cable Manager ──────────────────────────────────────────
+    // ── Link Cable Manager & Cached Config ──────────────────────────
     private final LinkManager mLinkManager = new LinkManager();
+    private boolean mLastLinkConnected = false;
+    private int mLastLinkPlayerId = -1;
+    private int mLastLinkNumDevices = -1;
 
     // ── Callback ────────────────────────────────────────────────────
     public interface Callback {
@@ -114,10 +117,18 @@ public class EmulationThread extends Thread {
                 continue;
             }
 
-            // ── 3. Sync Link Cable Configuration ───────────────────
-            setLinkConfigJNI(mLinkManager.isConnected(),
-                             mLinkManager.getPlayerId(),
-                             mLinkManager.getConnectedDevices());
+            // ── 3. Sync Link Cable Configuration on change ─────────
+            boolean linkConnected = mLinkManager.isConnected();
+            int linkPlayerId = mLinkManager.getPlayerId();
+            int linkNumDevices = mLinkManager.getConnectedDevices();
+            if (linkConnected != mLastLinkConnected ||
+                linkPlayerId != mLastLinkPlayerId ||
+                linkNumDevices != mLastLinkNumDevices) {
+                setLinkConfigJNI(linkConnected, linkPlayerId, linkNumDevices);
+                mLastLinkConnected = linkConnected;
+                mLastLinkPlayerId = linkPlayerId;
+                mLastLinkNumDevices = linkNumDevices;
+            }
 
             // ── 4. Inject any resolved Link Transfer ───────────────
             short[] resolvedTransfer = mLinkManager.pollResolvedTransfer();

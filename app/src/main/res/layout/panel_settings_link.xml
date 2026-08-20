@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Link Cable Mode (On-Demand Socket Engine)"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Invariant: When Link is OFF, zero background sockets or threads exist."
+        android:textColor="#888888"
+        android:textSize="11sp"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/rg_link_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_link_off"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Link Cable OFF (Standard Single Player)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+
+        <RadioButton
+            android:id="@+id/rb_link_loopback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loopback Mode (2P Virtual In-Process Validation)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+    </RadioGroup>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="10dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Live Link Diagnostics (500ms Real-Time Poll)"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#33000000"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/txt_link_diagnostics"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="State: DISCONNECTED\nTransfers: 0\nErrors: 0"
+            android:textColor="#00EEFF"
+            android:fontFamily="monospace"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</LinearLayout>

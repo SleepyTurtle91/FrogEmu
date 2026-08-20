@@ -3125,6 +3125,7 @@ id chains
 id checkbox
 id checked
 id chk_audio_enabled
+id chk_integer_scaling
 id chronometer
 id circle_center
 id clear_text
@@ -3336,6 +3337,7 @@ id outline
 id outward
 id overshoot
 id packed
+id panel_content_container
 id parallax
 id parent
 id parentPanel
@@ -3406,6 +3408,7 @@ id search_view_status_bar_spacer
 id search_view_toolbar
 id search_view_toolbar_container
 id search_voice_btn
+id seek_audio_volume
 id select_dialog_listview
 id selected
 id selection_type
@@ -3415,6 +3418,7 @@ id shortcut
 id showCustom
 id showHome
 id showTitle
+id sidebar_category_container
 id sin
 id skipCollapsed
 id skipped
@@ -3494,9 +3498,12 @@ id transition_position
 id transition_scene_layoutid_cache
 id transition_transform
 id triangle
-id txt_gamepad_status
+id txt_active_category_title
+id txt_audio_volume
+id txt_hardware_controller
 id txt_link_diagnostics
 id txt_rom_title
+id txt_save_directory
 id unchecked
 id uniform
 id unlabeled
@@ -3708,6 +3715,13 @@ layout notification_template_custom_big
 layout notification_template_icon_group
 layout notification_template_part_chronometer
 layout notification_template_part_time
+layout panel_settings_about
+layout panel_settings_audio
+layout panel_settings_cheats
+layout panel_settings_controls
+layout panel_settings_display
+layout panel_settings_link
+layout panel_settings_saves
 layout select_dialog_item_material
 layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material

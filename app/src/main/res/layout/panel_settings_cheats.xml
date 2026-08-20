@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cheats Engine Plugin"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phase 7 Feature: Libretro/SQLite cheats.db database parser, GameShark/ActionReplay core hook, and per-game cheat selection."
+        android:textColor="#777777"
+        android:textSize="12sp"
+        android:layout_marginBottom="12dp" />
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cheats Database Status"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="cheats.db: Not loaded (Standby for Phase 7)"
+        android:textColor="#AAAAAA"
+        android:fontFamily="monospace"
+        android:textSize="12sp" />
+
+</LinearLayout>
