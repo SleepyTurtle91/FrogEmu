@@ -10,60 +10,72 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- ── Toolbar (always visible) ────────────────────────────── -->
-    <Button
-        android:id="@+id/btn_load_rom"
-        android:layout_width="wrap_content"
+    <!-- ── Clean Minimalist Toolbar ────────────────────────────── -->
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Load ROM"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="4dp"
-        android:background="#88000000"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp"
-        android:minHeight="36dp" />
+        android:padding="6dp">
 
-    <Button
-        android:id="@+id/btn_link"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Link: Off"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@id/btn_upscaler"
-        android:layout_marginTop="4dp"
-        android:layout_marginRight="4dp"
-        android:background="#88000000"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp"
-        android:minHeight="36dp" />
+        <!-- FroggBA Brand + Active ROM Title -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="6dp">
 
-    <Button
-        android:id="@+id/btn_upscaler"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nearest"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="4dp"
-        android:layout_marginRight="4dp"
-        android:background="#88000000"
-        android:textColor="#FFFFFF"
-        android:textSize="11sp"
-        android:minHeight="36dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🐸 FroggBA"
+                android:textColor="#00FF66"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/txt_rom_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:visibility="gone"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="8dp"
-        android:textColor="#AAFFFFFF"
-        android:textSize="10sp" />
+            <TextView
+                android:id="@+id/txt_rom_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:visibility="gone"
+                android:textColor="#AAFFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <!-- Top Right Action Controls -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true">
+
+            <Button
+                android:id="@+id/btn_load_rom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Load ROM 📁"
+                android:background="#88000000"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:minHeight="36dp"
+                android:layout_marginRight="6dp" />
+
+            <Button
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⚙️"
+                android:background="#88000000"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:minHeight="36dp"
+                android:minWidth="44dp" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <!-- ── Touch controls (auto-hidden when gamepad detected) ── -->
     <FrameLayout
@@ -99,10 +111,10 @@
 
         <!-- L / R -->
         <Button android:id="@+id/btn_l" android:layout_width="70dp" android:layout_height="40dp" android:text="L"
-            android:layout_gravity="top|start" android:layout_marginTop="4dp" android:layout_marginStart="4dp"
+            android:layout_gravity="top|start" android:layout_marginTop="38dp" android:layout_marginStart="4dp"
             android:background="#88FFFFFF" android:textSize="11sp" />
         <Button android:id="@+id/btn_r" android:layout_width="70dp" android:layout_height="40dp" android:text="R"
-            android:layout_gravity="top|end" android:layout_marginTop="4dp" android:layout_marginEnd="4dp"
+            android:layout_gravity="top|end" android:layout_marginTop="38dp" android:layout_marginEnd="4dp"
             android:background="#88FFFFFF" android:textSize="11sp" />
 
         <!-- Select / Start -->

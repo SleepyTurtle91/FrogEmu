@@ -206,3 +206,5 @@
 2	119	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/arm64-v8a/mGBA-core/CMakeFiles/mgba-version-info	820810c6540d236c
 119	307	1787229854576552853	CMakeFiles/mygbaemulator.dir/native-lib.cpp.o	7127f594e528cb90
 307	331	1787229854599552383	/workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/arm64-v8a/libmygbaemulator.so	687d17bbf78c4e51
+2	116	0	mGBA-core/CMakeFiles/mgba-version-info	820810c6540d236c
+2	116	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/arm64-v8a/mGBA-core/CMakeFiles/mgba-version-info	820810c6540d236c

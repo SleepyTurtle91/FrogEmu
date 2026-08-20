@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.lemonsquad.froggba.link.LinkManager;
 import com.lemonsquad.froggba.link.LoopbackTransport;
+import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.SettingsDialog;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SettingsDialog.OnSettingsChangedListener {
 
     private static final int PICK_ROM_REQUEST = 1;
 
@@ -33,14 +35,10 @@ public class MainActivity extends AppCompatActivity {
     private EmulatorRenderer   mRenderer;
     private EmulationThread    mEmuThread;
     private InputManager       mInputManager;
+    private FroggBASettings    mSettings;
 
     private View    mTouchControls;
-    private Button  mBtnUpscaler;
-    private Button  mBtnLink;
     private TextView mTxtRomTitle;
-
-    private int mUpscalerState = 0;
-    private int mLinkState = 0;
 
     // ── Lifecycle ───────────────────────────────────────────────────
 
@@ -48,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mSettings = FroggBASettings.getInstance(this);
 
         // Immersive fullscreen
         applyImmersiveMode();
@@ -72,14 +72,17 @@ public class MainActivity extends AppCompatActivity {
         });
         mEmuThread.start();
 
+        // Apply initial link setting
+        applyInitialLinkMode();
+
         mInputManager = new InputManager(mEmuThread);
 
         // GL Surface
         mGLView = new GLSurfaceView(this);
         mGLView.setEGLContextClientVersion(2);
         mRenderer = new EmulatorRenderer();
+        mRenderer.setUpscaler(mSettings.getUpscaler()); // Load saved shader
         mGLView.setRenderer(mRenderer);
-        // Render continuously so we always show the latest published frame
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         FrameLayout glContainer = findViewById(R.id.gl_container);
@@ -100,35 +103,7 @@ public class MainActivity extends AppCompatActivity {
         setupButton(R.id.btn_l,      InputManager.GBA_KEY_L);
         setupButton(R.id.btn_r,      InputManager.GBA_KEY_R);
 
-        // Shader toggle
-        mBtnUpscaler = findViewById(R.id.btn_upscaler);
-        mBtnUpscaler.setOnClickListener(v -> {
-            mUpscalerState = (mUpscalerState + 1) % 2;
-            if (mUpscalerState == 0) {
-                mRenderer.setUpscaler(EmulatorRenderer.Upscaler.NEAREST);
-                mBtnUpscaler.setText("Nearest");
-            } else {
-                mRenderer.setUpscaler(EmulatorRenderer.Upscaler.SCALE2X);
-                mBtnUpscaler.setText("Scale2x");
-            }
-        });
-
-        // Link Cable toggle (Step 1: Loopback validation)
-        mBtnLink = findViewById(R.id.btn_link);
-        mBtnLink.setOnClickListener(v -> {
-            mLinkState = (mLinkState + 1) % 2;
-            if (mLinkState == 0) {
-                mEmuThread.getLinkManager().detachTransport();
-                mBtnLink.setText("Link: Off");
-            } else {
-                // Attach loopback transport: Player 0 (Master) with 2 virtual devices
-                mEmuThread.getLinkManager().attachTransport(
-                        new LoopbackTransport(2), LinkManager.Mode.MASTER, 0, 2);
-                mBtnLink.setText("Link: Loopback");
-            }
-        });
-
-        // Load ROM
+        // Load ROM button
         mTxtRomTitle = findViewById(R.id.txt_rom_title);
         findViewById(R.id.btn_load_rom).setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -137,8 +112,23 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(intent, PICK_ROM_REQUEST);
         });
 
-        // Auto-hide touch controls if physical gamepad is detected
+        // Settings ⚙️ button
+        findViewById(R.id.btn_settings).setOnClickListener(v -> {
+            new SettingsDialog(this, mEmuThread.getLinkManager(), this).show();
+        });
+
+        // Update touch controls based on saved settings and hardware
         updateTouchControlsVisibility();
+    }
+
+    private void applyInitialLinkMode() {
+        if (mSettings.getLinkMode() == LinkManager.Mode.MASTER) {
+            mEmuThread.getLinkManager().attachTransport(
+                    new LoopbackTransport(mSettings.getLinkNumDevices()),
+                    LinkManager.Mode.MASTER,
+                    mSettings.getLinkPlayerId(),
+                    mSettings.getLinkNumDevices());
+        }
     }
 
     @Override
@@ -164,6 +154,38 @@ public class MainActivity extends AppCompatActivity {
             mEmuThread.stopEmulation();
             try { mEmuThread.join(2000); } catch (InterruptedException ignored) {}
         }
+    }
+
+    // ── Settings Callbacks ──────────────────────────────────────────
+
+    @Override
+    public void onUpscalerChanged(EmulatorRenderer.Upscaler upscaler) {
+        if (mRenderer != null) {
+            mRenderer.setUpscaler(upscaler);
+        }
+    }
+
+    @Override
+    public void onTouchModeChanged(FroggBASettings.TouchMode mode) {
+        updateTouchControlsVisibility();
+    }
+
+    @Override
+    public void onLinkModeChanged(LinkManager.Mode mode) {
+        if (mode == LinkManager.Mode.MASTER) {
+            mEmuThread.getLinkManager().attachTransport(
+                    new LoopbackTransport(mSettings.getLinkNumDevices()),
+                    LinkManager.Mode.MASTER,
+                    mSettings.getLinkPlayerId(),
+                    mSettings.getLinkNumDevices());
+        } else {
+            mEmuThread.getLinkManager().detachTransport();
+        }
+    }
+
+    @Override
+    public void onAudioChanged(boolean enabled) {
+        // Handled via SharedPreferences flag
     }
 
     // ── ROM loading ─────────────────────────────────────────────────
@@ -271,13 +293,25 @@ public class MainActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
     }
 
-    /** Hide on-screen touch controls when a physical gamepad is present. */
+    /** Update on-screen touch controls based on FroggBASettings and hardware status. */
     private void updateTouchControlsVisibility() {
         if (mTouchControls == null) return;
+        FroggBASettings.TouchMode mode = mSettings != null ? mSettings.getTouchMode() : FroggBASettings.TouchMode.AUTO;
+
+        if (mode == FroggBASettings.TouchMode.ALWAYS) {
+            mTouchControls.setVisibility(View.VISIBLE);
+            return;
+        }
+        if (mode == FroggBASettings.TouchMode.NEVER) {
+            mTouchControls.setVisibility(View.GONE);
+            return;
+        }
+
+        // AUTO mode: Check if physical gamepad is connected
         boolean hasGamepad = false;
         for (int id : InputDevice.getDeviceIds()) {
             InputDevice dev = InputDevice.getDevice(id);

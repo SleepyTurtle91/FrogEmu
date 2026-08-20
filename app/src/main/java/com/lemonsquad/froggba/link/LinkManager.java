@@ -2,6 +2,7 @@ package com.lemonsquad.froggba.link;
 
 import android.util.Log;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -22,10 +23,35 @@ public class LinkManager implements LinkTransport.Listener {
         SLAVE    // Player 1..3
     }
 
+    // ── Diagnostics Snapshot ────────────────────────────────────────
+    public static class Diagnostics {
+        public Mode mode = Mode.DISCONNECTED;
+        public int playerId = 0;
+        public int connectedDevices = 1;
+        public long totalTransfers = 0;
+        public long errors = 0;
+        public int lastSequence = 0;
+        public short lastLocalWord = 0;
+        public short[] lastMultiData = new short[]{ (short)0xFFFF, (short)0xFFFF, (short)0xFFFF, (short)0xFFFF };
+
+        @Override
+        public String toString() {
+            return String.format("State: %s (P%d)\nDevices: %d/4\nTransfers: %d\nErrors: %d\nSeq: %d\nLast Out: 0x%04X\nLast Multi: [0x%04X, 0x%04X, 0x%04X, 0x%04X]",
+                    mode, playerId, connectedDevices, totalTransfers, errors, lastSequence,
+                    lastLocalWord & 0xFFFF,
+                    lastMultiData[0] & 0xFFFF, lastMultiData[1] & 0xFFFF,
+                    lastMultiData[2] & 0xFFFF, lastMultiData[3] & 0xFFFF);
+        }
+    }
+
     private volatile Mode mMode = Mode.DISCONNECTED;
     private final AtomicInteger mPlayerId = new AtomicInteger(0);
     private final AtomicInteger mConnectedDevices = new AtomicInteger(1);
     private final AtomicInteger mSequence = new AtomicInteger(0);
+    private final AtomicLong mTotalTransfers = new AtomicLong(0);
+    private final AtomicLong mErrors = new AtomicLong(0);
+    private volatile short mLastLocalWord = 0;
+    private volatile short[] mLastMultiData = new short[]{ (short)0xFFFF, (short)0xFFFF, (short)0xFFFF, (short)0xFFFF };
 
     private volatile LinkTransport mTransport;
 
@@ -42,6 +68,9 @@ public class LinkManager implements LinkTransport.Listener {
         mMode = mode;
         mPlayerId.set(playerId);
         mConnectedDevices.set(numDevices);
+        mTotalTransfers.set(0);
+        mErrors.set(0);
+        mSequence.set(0);
 
         if (mTransport != null) {
             mTransport.setListener(this);
@@ -64,6 +93,10 @@ public class LinkManager implements LinkTransport.Listener {
         return mMode != Mode.DISCONNECTED && mTransport != null;
     }
 
+    public Mode getMode() {
+        return mMode;
+    }
+
     public int getPlayerId() {
         return mPlayerId.get();
     }
@@ -77,6 +110,7 @@ public class LinkManager implements LinkTransport.Listener {
      */
     public void onLocalTransferRequest(short localWord) {
         if (!isConnected()) return;
+        mLastLocalWord = localWord;
         int seq = mSequence.incrementAndGet();
         mTransport.sendTransfer(mPlayerId.get(), seq, localWord);
     }
@@ -86,7 +120,26 @@ public class LinkManager implements LinkTransport.Listener {
      * Returns null if no resolved transfer is waiting.
      */
     public short[] pollResolvedTransfer() {
-        return mPendingResolvedData.getAndSet(null);
+        short[] data = mPendingResolvedData.getAndSet(null);
+        if (data != null) {
+            mTotalTransfers.incrementAndGet();
+            mLastMultiData = data;
+        }
+        return data;
+    }
+
+    /** Returns an immutable diagnostics snapshot for UI/logging. */
+    public Diagnostics getDiagnostics() {
+        Diagnostics d = new Diagnostics();
+        d.mode = mMode;
+        d.playerId = mPlayerId.get();
+        d.connectedDevices = mConnectedDevices.get();
+        d.totalTransfers = mTotalTransfers.get();
+        d.errors = mErrors.get();
+        d.lastSequence = mSequence.get();
+        d.lastLocalWord = mLastLocalWord;
+        d.lastMultiData = mLastMultiData;
+        return d;
     }
 
     // ── LinkTransport.Listener callbacks (runs on transport/network thread) ──
@@ -95,6 +148,8 @@ public class LinkManager implements LinkTransport.Listener {
     public void onTransferResolved(int sequence, short[] multiData4) {
         if (multiData4 != null && multiData4.length == 4) {
             mPendingResolvedData.set(multiData4);
+        } else {
+            mErrors.incrementAndGet();
         }
     }
 

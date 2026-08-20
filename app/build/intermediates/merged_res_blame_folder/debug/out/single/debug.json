@@ -1,5 +1,9 @@
 [
     {
+        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_dialog_settings.xml.flat",
+        "source": "com.lemonsquad.froggba.app-main-30:/layout/dialog_settings.xml"
+    },
+    {
         "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_activity_main.xml.flat",
         "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/activity_main.xml"
     },
