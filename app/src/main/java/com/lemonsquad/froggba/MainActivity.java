@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import com.lemonsquad.froggba.link.LinkManager;
+import com.lemonsquad.froggba.link.LoopbackTransport;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,9 +36,11 @@ public class MainActivity extends AppCompatActivity {
 
     private View    mTouchControls;
     private Button  mBtnUpscaler;
+    private Button  mBtnLink;
     private TextView mTxtRomTitle;
 
     private int mUpscalerState = 0;
+    private int mLinkState = 0;
 
     // ── Lifecycle ───────────────────────────────────────────────────
 
@@ -106,6 +110,21 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mRenderer.setUpscaler(EmulatorRenderer.Upscaler.SCALE2X);
                 mBtnUpscaler.setText("Scale2x");
+            }
+        });
+
+        // Link Cable toggle (Step 1: Loopback validation)
+        mBtnLink = findViewById(R.id.btn_link);
+        mBtnLink.setOnClickListener(v -> {
+            mLinkState = (mLinkState + 1) % 2;
+            if (mLinkState == 0) {
+                mEmuThread.getLinkManager().detachTransport();
+                mBtnLink.setText("Link: Off");
+            } else {
+                // Attach loopback transport: Player 0 (Master) with 2 virtual devices
+                mEmuThread.getLinkManager().attachTransport(
+                        new LoopbackTransport(2), LinkManager.Mode.MASTER, 0, 2);
+                mBtnLink.setText("Link: Loopback");
             }
         });
 

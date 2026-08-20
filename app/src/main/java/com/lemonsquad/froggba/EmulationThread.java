@@ -8,13 +8,14 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
+import com.lemonsquad.froggba.link.LinkManager;
 
 /**
  * Dedicated thread that exclusively owns the mGBA core.
  *
  * Architectural rule:
  *   ONLY this thread may call native methods that touch the emulator core.
- *   No other thread (UI, GL, Audio) may invoke JNI on the core.
+ *   No other thread (UI, GL, Audio, or Network) may invoke JNI on the core.
  *
  * Responsibilities:
  *   - Core lifecycle  (init / destroy)
@@ -23,6 +24,7 @@ import android.util.Log;
  *   - Video publish   (memcpy back→front in native)
  *   - Audio read      (mAudioBufferRead in native)
  *   - Frame timing    (~59.73 Hz)
+ *   - Link Cable SIO  (setLinkConfig, getPendingOut, completeLinkTransfer)
  */
 public class EmulationThread extends Thread {
 
@@ -37,6 +39,7 @@ public class EmulationThread extends Thread {
     private volatile boolean mRunning = true;
     private volatile boolean mPaused  = false;
     private volatile String  mPendingRomPath = null;
+    private volatile String  mPendingRomName = null;
 
     // ── Input ───────────────────────────────────────────────────────
     private final AtomicInteger mInputMask = new AtomicInteger(0);
@@ -45,11 +48,13 @@ public class EmulationThread extends Thread {
     private volatile ByteBuffer mDisplayBuffer = null;
 
     // ── Audio hand-off to AudioThread ───────────────────────────────
-    // EmulationThread produces short[] chunks, AudioThread consumes.
     private final ArrayBlockingQueue<short[]> mAudioQueue =
             new ArrayBlockingQueue<>(16);
     private final short[] mAudioScratch = new short[2048 * 2]; // stereo
     private AudioThread mAudioThread;
+
+    // ── Link Cable Manager ──────────────────────────────────────────
+    private final LinkManager mLinkManager = new LinkManager();
 
     // ── Callback ────────────────────────────────────────────────────
     public interface Callback {
@@ -62,6 +67,8 @@ public class EmulationThread extends Thread {
 
     public void setCallback(Callback cb) { mCallback = cb; }
 
+    public LinkManager getLinkManager() { return mLinkManager; }
+
     /** Atomically update the GBA key bitmask. */
     public void setInputMask(int mask) { mInputMask.set(mask); }
 
@@ -70,7 +77,6 @@ public class EmulationThread extends Thread {
         mPendingRomName = displayName;
         mPendingRomPath = path;   // volatile write — must be last
     }
-    private volatile String mPendingRomName = null;
 
     public void pauseEmulation()  { mPaused = true;  }
     public void resumeEmulation() { mPaused = false; }
@@ -108,7 +114,18 @@ public class EmulationThread extends Thread {
                 continue;
             }
 
-            // ── 3. Step one frame ───────────────────────────────────
+            // ── 3. Sync Link Cable Configuration ───────────────────
+            setLinkConfigJNI(mLinkManager.isConnected(),
+                             mLinkManager.getPlayerId(),
+                             mLinkManager.getConnectedDevices());
+
+            // ── 4. Inject any resolved Link Transfer ───────────────
+            short[] resolvedTransfer = mLinkManager.pollResolvedTransfer();
+            if (resolvedTransfer != null) {
+                completeLinkTransferJNI(resolvedTransfer);
+            }
+
+            // ── 5. Step one frame ───────────────────────────────────
             long t0 = System.nanoTime();
 
             int keyMask    = mInputMask.get();
@@ -121,7 +138,13 @@ public class EmulationThread extends Thread {
                 mAudioQueue.offer(copy);
             }
 
-            // ── 4. Frame timing ─────────────────────────────────────
+            // ── 6. Check for Link Transfer Request initiated by game ─
+            int pendingOut = getLinkPendingOutJNI();
+            if (pendingOut != -1) {
+                mLinkManager.onLocalTransferRequest((short) pendingOut);
+            }
+
+            // ── 7. Frame timing ─────────────────────────────────────
             long elapsed = System.nanoTime() - t0;
             long sleepNs = FRAME_TIME_NS - elapsed;
             if (sleepNs > 1_000_000L) {
@@ -133,6 +156,7 @@ public class EmulationThread extends Thread {
         }
 
         // ── Cleanup ─────────────────────────────────────────────────
+        mLinkManager.detachTransport();
         stopAudioThread();
         destroyCoreJNI();
         mDisplayBuffer = null;
@@ -227,4 +251,9 @@ public class EmulationThread extends Thread {
     private native int  stepFrameJNI(int keyMask, short[] audioOut, int capacity);
     private native int  getSampleRateJNI();
     private native void destroyCoreJNI();
+
+    // Link Cable SIO JNI
+    private native void setLinkConfigJNI(boolean connected, int deviceId, int numDevices);
+    private native int  getLinkPendingOutJNI();
+    private native void completeLinkTransferJNI(short[] multiData4);
 }
