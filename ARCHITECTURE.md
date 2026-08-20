@@ -34,20 +34,21 @@ core->setVideoBuffer(core, videoBuffer, width);
 - **Initial Milestone**: Output raw pixels (240x160) to a basic Android `SurfaceView` or `GLSurfaceView` without enhancements.
 - **Enhancement Phase**: Implement a GLSL Fragment Shader for upscaling.
 
-## 4. Audio Pipeline
+## 4. Input Handling
+Input state is pushed as a bitmask matching mGBA's internal keys (e.g. `GBA_KEY_A = 0`, so `1 << 0`).
+```c
+uint32_t keyMask = 0; // Set bits for A, B, UP, DOWN, etc.
+core->setKeys(core, keyMask);
+```
+Android touch events will map to an `InputManager` maintaining the key state, which pushes to native.
+
+## 5. Audio Pipeline
 mGBA uses a ring buffer for audio, defined in `mgba-util/audio-buffer.h`.
 ```c
 core->setAudioBufferSize(core, 2048);
 struct mAudioBuffer* audioBuf = core->getAudioBuffer(core);
 ```
 The Android frontend will pull samples via `mAudioBufferRead()` and send them to an Android `AudioTrack` stream.
-
-## 5. Input Handling
-Input state is pushed as a bitmask matching mGBA's internal keys (e.g. `GBA_KEY_A = 0`, so `1 << 0`).
-```c
-uint32_t keyMask = 0; // Set bits for A, B, UP, DOWN, etc.
-core->setKeys(core, keyMask);
-```
 
 ## 6. Cheats Database (`cheats.db`)
 *Verification Required*: mGBA parses libretro/mGBA text formats natively via `mCheatParseFile()`. If `cheats.db` is an SQLite file, we will need a JNI bridge to query the SQLite DB and push individual cheats into mGBA via `mCheatAddLine()`. 
@@ -56,24 +57,18 @@ For now, we assume `cheats.db` implies a bundled file we will extract from `asse
 ## 7. Execution Workflow Milestones
 To maintain stability, FroggBA will be implemented in the following phases:
 
-| Milestone           | Status                     |
-| ------------------- | -------------------------- |
-| Project / package   | ✅ `com.lemonsquad.froggba` |
-| mGBA integration    | ✅                          |
-| CMake + NDK         | ✅                          |
-| JNI ABI alignment   | ✅                          |
-| Core initialization | ✅                          |
-| ROM loading         | ✅ **Milestone 2**          |
-| Frame execution     | 🔜                         |
-| First framebuffer   | 🔜                         |
-| Android display     | 🔜                         |
-| Audio               | ⏳                          |
-| Input               | ⏳                          |
-| Wi-Fi Link          | 🔬 Research                |
-| Bluetooth Link      | 🔬 Research                |
-| GLSL upscaler       | ⏳                          |
-| Cheats              | ⏳                          |
-| Launcher icon       | ✅ Integrated               |
+| Milestone                    | Status                     |
+| ---------------------------- | -------------------------- |
+| Milestone 1: Core alive      | ✅                          |
+| Milestone 2: ROM loaded      | ✅                          |
+| Milestone 3: Frame execution | ✅                          |
+| Milestone 4: First frame     | ✅                          |
+| Milestone 5: Input + controls| 🔜 **Now**                 |
+| Milestone 6: Audio           | ⏳                          |
+| Milestone 7: Real ROM testing| ⏳                          |
+| Milestone 8: Link multiplayer| 🔬 Research                |
+| Upscaler                     | ⏳                          |
+| Cheats                       | ⏳                          |
 
 ## 8. Multiplayer (Local Link Cable)
 FroggBA will implement a deterministic Link Cable networking layer for local offline multiplayer:

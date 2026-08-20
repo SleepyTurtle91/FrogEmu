@@ -3096,6 +3096,16 @@ id bounce
 id bounceBoth
 id bounceEnd
 id bounceStart
+id btn_a
+id btn_b
+id btn_down
+id btn_l
+id btn_left
+id btn_r
+id btn_right
+id btn_select
+id btn_start
+id btn_up
 id buttonPanel
 id cache_measures
 id callMeasure
@@ -3198,6 +3208,7 @@ id frost
 id fullscreen_header
 id ghost_view
 id ghost_view_holder
+id gl_container
 id gone
 id graph
 id graph_wrap
@@ -3604,6 +3615,7 @@ layout abc_search_dropdown_item_icons_2line
 layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
+layout activity_main
 layout custom_dialog
 layout design_bottom_navigation_item
 layout design_bottom_sheet_dialog

@@ -86,3 +86,10 @@ Java_com_lemonsquad_froggba_MainActivity_runFrameJNI(JNIEnv* env, jobject) {
         g_core->runFrame(g_core);
     }
 }
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_lemonsquad_froggba_MainActivity_setKeysJNI(JNIEnv* env, jobject, jint mask) {
+    if (g_core) {
+        g_core->setKeys(g_core, mask);
+    }
+}

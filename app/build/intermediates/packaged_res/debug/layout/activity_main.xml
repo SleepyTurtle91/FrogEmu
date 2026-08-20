@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Container for GLSurfaceView -->
+    <FrameLayout
+        android:id="@+id/gl_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- D-Pad -->
+    <RelativeLayout
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="30dp">
+
+        <Button android:id="@+id/btn_up" android:layout_width="50dp" android:layout_height="50dp" android:text="↑" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
+        <Button android:id="@+id/btn_down" android:layout_width="50dp" android:layout_height="50dp" android:text="↓" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
+        <Button android:id="@+id/btn_left" android:layout_width="50dp" android:layout_height="50dp" android:text="←" android:layout_centerVertical="true" android:layout_alignParentLeft="true"/>
+        <Button android:id="@+id/btn_right" android:layout_width="50dp" android:layout_height="50dp" android:text="→" android:layout_centerVertical="true" android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+
+    <!-- A/B Buttons -->
+    <RelativeLayout
+        android:layout_width="120dp"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="50dp"
+        android:layout_marginRight="30dp">
+
+        <Button android:id="@+id/btn_b" android:layout_width="50dp" android:layout_height="50dp" android:text="B" android:layout_alignParentBottom="true" android:layout_alignParentLeft="true"/>
+        <Button android:id="@+id/btn_a" android:layout_width="50dp" android:layout_height="50dp" android:text="A" android:layout_alignParentTop="true" android:layout_alignParentRight="true"/>
+    </RelativeLayout>
+
+    <!-- L/R Buttons -->
+    <Button android:id="@+id/btn_l" android:layout_width="80dp" android:layout_height="50dp" android:text="L" android:layout_alignParentTop="true" android:layout_alignParentLeft="true" android:layout_marginTop="10dp" android:layout_marginLeft="10dp"/>
+    <Button android:id="@+id/btn_r" android:layout_width="80dp" android:layout_height="50dp" android:text="R" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:layout_marginTop="10dp" android:layout_marginRight="10dp"/>
+
+    <!-- Select/Start Buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal">
+        
+        <Button android:id="@+id/btn_select" android:layout_width="70dp" android:layout_height="40dp" android:text="SEL" android:textSize="12sp" android:layout_marginRight="10dp"/>
+        <Button android:id="@+id/btn_start" android:layout_width="70dp" android:layout_height="40dp" android:text="START" android:textSize="12sp" android:layout_marginLeft="10dp"/>
+    </LinearLayout>
+
+</RelativeLayout>
