@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
         // Apply initial link setting
         applyInitialLinkMode();
 
-        mInputManager = new InputManager(mEmuThread);
+        mInputManager = new InputManager(mEmuThread, mSettings.loadActiveInputProfile());
 
         // GL Surface
         mGLView = new GLSurfaceView(this);
@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     @Override
     protected void onPause() {
         super.onPause();
+        if (mInputManager != null) mInputManager.resetKeyStates();
         if (mEmuThread != null) mEmuThread.pauseEmulation();
         if (mGLView != null) mGLView.onPause();
     }
@@ -168,6 +169,13 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     @Override
     public void onTouchModeChanged(FroggBASettings.TouchMode mode) {
         updateTouchControlsVisibility();
+    }
+
+    @Override
+    public void onInputProfileChanged(com.lemonsquad.froggba.input.InputProfile profile) {
+        if (mInputManager != null) {
+            mInputManager.setProfile(profile);
+        }
     }
 
     @Override
@@ -264,12 +272,12 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_POINTER_DOWN:
-                    mInputManager.setKeyPressed(keyBit, true);
+                    mInputManager.setTouchKeyPressed(keyBit, true);
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_POINTER_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    mInputManager.setKeyPressed(keyBit, false);
+                    mInputManager.setTouchKeyPressed(keyBit, false);
                     break;
             }
             return true;

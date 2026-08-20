@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <!-- ── Hardware Controller Status ────────────────────────── -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -11,7 +12,7 @@
         android:textColor="#00FF66"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginBottom="6dp" />
+        android:layout_marginBottom="4dp" />
 
     <TextView
         android:id="@+id/txt_hardware_controller"
@@ -19,11 +20,120 @@
         android:layout_height="wrap_content"
         android:text="Detected: Anbernic RG556 Gamepad ✅"
         android:textColor="#00FF88"
-        android:textSize="13sp"
-        android:layout_marginBottom="12dp" />
+        android:textSize="12sp"
+        android:layout_marginBottom="10dp" />
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="6dp" />
+
+    <!-- ── Controller Presets ─────────────────────────────────── -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gamepad Layout Presets"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <RadioGroup
+        android:id="@+id/rg_input_preset"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_preset_standard_gba"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Standard GBA (A=A, B=B, X=Turbo A, Y=Turbo B)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_preset_snes_retro"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SNES Retro Layout (B=A, Y=B, A=Turbo A, X=Turbo B)"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioButton
+            android:id="@+id/rb_preset_custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Custom Physical Button Mapping"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+    </RadioGroup>
+
+    <!-- ── Custom Button Mapping Table ────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/ll_custom_mapping_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="8dp"
+        android:background="#1E000000"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tap any action below to remap button:"
+            android:textColor="#00DDFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:id="@+id/ll_mapping_rows_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </LinearLayout>
 
     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
 
+    <!-- ── Analog Deadzone Slider ─────────────────────────────── -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Analog Stick Deadzone &amp; Sensitivity"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <SeekBar
+            android:id="@+id/seek_analog_deadzone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:max="80"
+            android:progress="30" />
+
+        <TextView
+            android:id="@+id/txt_deadzone_val"
+            android:layout_width="55dp"
+            android:layout_height="wrap_content"
+            android:text="40%"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:gravity="end" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+
+    <!-- ── Touch Screen Controls ──────────────────────────────── -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,7 +141,7 @@
         android:textColor="#00FF66"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="6dp" />
 
     <RadioGroup
         android:id="@+id/rg_touch_mode"
@@ -46,7 +156,7 @@
             android:text="Auto-Hide (Hide overlay when physical gamepad is present)"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="4dp" />
 
         <RadioButton
             android:id="@+id/rb_touch_always"
@@ -55,7 +165,7 @@
             android:text="Always Show (Keep on-screen buttons visible)"
             android:textColor="#FFFFFF"
             android:textSize="13sp"
-            android:layout_marginBottom="6dp" />
+            android:layout_marginBottom="4dp" />
 
         <RadioButton
             android:id="@+id/rb_touch_never"

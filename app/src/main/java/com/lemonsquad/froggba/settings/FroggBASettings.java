@@ -3,14 +3,15 @@ package com.lemonsquad.froggba.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import com.lemonsquad.froggba.EmulatorRenderer;
+import com.lemonsquad.froggba.input.InputProfile;
 import com.lemonsquad.froggba.link.LinkManager;
 
 /**
- * Centralized, persistent settings repository for FroggBA.
+ * Centralized, persistent settings repository for FrogEmu.
  */
 public class FroggBASettings {
 
-    private static final String PREF_NAME = "froggba_settings";
+    private static final String PREF_NAME = "frogemu_settings";
 
     // Display
     private static final String KEY_UPSCALER = "display_upscaler";
@@ -19,6 +20,9 @@ public class FroggBASettings {
     // Controls
     public enum TouchMode { AUTO, ALWAYS, NEVER }
     private static final String KEY_TOUCH_MODE = "controls_touch_mode";
+    private static final String KEY_INPUT_PRESET = "controls_input_preset";
+    private static final String KEY_ANALOG_DEADZONE = "controls_analog_deadzone";
+    private static final String KEY_CUSTOM_PROFILE_JSON = "controls_custom_profile_json";
 
     // Audio
     private static final String KEY_AUDIO_ENABLED = "audio_enabled";
@@ -67,7 +71,7 @@ public class FroggBASettings {
         mPrefs.edit().putBoolean(KEY_INTEGER_SCALING, enabled).apply();
     }
 
-    // ── Controls ────────────────────────────────────────────────────
+    // ── Controls & Input Profile ────────────────────────────────────
 
     public TouchMode getTouchMode() {
         String name = mPrefs.getString(KEY_TOUCH_MODE, TouchMode.AUTO.name());
@@ -80,6 +84,51 @@ public class FroggBASettings {
 
     public void setTouchMode(TouchMode mode) {
         mPrefs.edit().putString(KEY_TOUCH_MODE, mode.name()).apply();
+    }
+
+    public InputProfile.Preset getInputPreset() {
+        String name = mPrefs.getString(KEY_INPUT_PRESET, InputProfile.Preset.STANDARD_GBA.name());
+        try {
+            return InputProfile.Preset.valueOf(name);
+        } catch (Exception e) {
+            return InputProfile.Preset.STANDARD_GBA;
+        }
+    }
+
+    public void setInputPreset(InputProfile.Preset preset) {
+        mPrefs.edit().putString(KEY_INPUT_PRESET, preset.name()).apply();
+    }
+
+    public float getAnalogDeadzone() {
+        return mPrefs.getFloat(KEY_ANALOG_DEADZONE, 0.40f);
+    }
+
+    public void setAnalogDeadzone(float deadzone) {
+        mPrefs.edit().putFloat(KEY_ANALOG_DEADZONE, Math.max(0.10f, Math.min(0.90f, deadzone))).apply();
+    }
+
+    public String getCustomProfileJson() {
+        return mPrefs.getString(KEY_CUSTOM_PROFILE_JSON, "");
+    }
+
+    public void setCustomProfileJson(String json) {
+        mPrefs.edit().putString(KEY_CUSTOM_PROFILE_JSON, json).apply();
+    }
+
+    /** Load active profile based on preset selection and stored custom mapping. */
+    public InputProfile loadActiveInputProfile() {
+        float deadzone = getAnalogDeadzone();
+        InputProfile.Preset preset = getInputPreset();
+        switch (preset) {
+            case SNES_RETRO:
+                return InputProfile.createSnesRetro(deadzone);
+            case CUSTOM:
+                String json = getCustomProfileJson();
+                return InputProfile.fromJson(json, deadzone);
+            case STANDARD_GBA:
+            default:
+                return InputProfile.createStandardGba(deadzone);
+        }
     }
 
     // ── Audio ───────────────────────────────────────────────────────
@@ -124,7 +173,7 @@ public class FroggBASettings {
     }
 
     public String getLinkPlayerName() {
-        return mPrefs.getString(KEY_PLAYER_NAME, "FroggBA Player");
+        return mPrefs.getString(KEY_PLAYER_NAME, "FrogEmu Player");
     }
 
     public void setLinkPlayerName(String name) {

@@ -31,6 +31,7 @@ public class SettingsDialog {
     public interface OnSettingsChangedListener {
         void onUpscalerChanged(EmulatorRenderer.Upscaler upscaler);
         void onTouchModeChanged(FroggBASettings.TouchMode mode);
+        void onInputProfileChanged(com.lemonsquad.froggba.input.InputProfile profile);
         void onLinkModeChanged(LinkManager.Mode mode);
         void onAudioChanged(boolean enabled);
     }

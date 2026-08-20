@@ -43,6 +43,7 @@ public class EmulationThread extends Thread {
 
     // ── Input ───────────────────────────────────────────────────────
     private final AtomicInteger mInputMask = new AtomicInteger(0);
+    private long mFrameCount = 0;
 
     // ── Video ───────────────────────────────────────────────────────
     private volatile ByteBuffer mDisplayBuffer = null;
@@ -139,8 +140,15 @@ public class EmulationThread extends Thread {
             // ── 5. Step one frame ───────────────────────────────────
             long t0 = System.nanoTime();
 
-            int keyMask    = mInputMask.get();
-            int audioFrames = stepFrameJNI(keyMask, mAudioScratch, 2048);
+            int packed = mInputMask.get();
+            int normalMask = packed & 0x3FF;
+            int turboMask  = (packed >> 16) & 0x3FF;
+
+            mFrameCount++;
+            boolean turboPhase = (mFrameCount & 1) == 0;
+            int effectiveKeyMask = normalMask | (turboPhase ? turboMask : 0);
+
+            int audioFrames = stepFrameJNI(effectiveKeyMask, mAudioScratch, 2048);
 
             // Hand audio to AudioThread (non-blocking — drop if queue full)
             if (audioFrames > 0) {
