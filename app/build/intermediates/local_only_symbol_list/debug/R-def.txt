@@ -13,6 +13,8 @@ id btn_start
 id btn_up
 id btn_upscaler
 id gl_container
+id touch_controls
+id txt_rom_title
 layout activity_main
 mipmap ic_launcher
 mipmap ic_launcher_round

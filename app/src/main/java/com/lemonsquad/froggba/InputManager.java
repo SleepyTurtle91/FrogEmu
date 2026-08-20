@@ -3,8 +3,14 @@ package com.lemonsquad.froggba;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.InputDevice;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Translates Android input events into a GBA key bitmask.
+ *
+ * This class never calls JNI directly.  It updates an AtomicInteger
+ * that the EmulationThread reads once per frame.
+ */
 public class InputManager {
 
     public static final int GBA_KEY_A      = 1 << 0;
@@ -18,68 +24,66 @@ public class InputManager {
     public static final int GBA_KEY_R      = 1 << 8;
     public static final int GBA_KEY_L      = 1 << 9;
 
-    private int mKeyMask = 0;
-    private final MainActivity mActivity;
+    private final AtomicInteger mKeyMask = new AtomicInteger(0);
+    private final EmulationThread mEmuThread;
 
-    public InputManager(MainActivity activity) {
-        mActivity = activity;
+    public InputManager(EmulationThread emuThread) {
+        mEmuThread = emuThread;
     }
 
+    /** Set or clear a single key bit and push the result to the emu thread. */
     public void setKeyPressed(int keyBit, boolean pressed) {
-        int oldMask = mKeyMask;
+        int mask;
         if (pressed) {
-            mKeyMask |= keyBit;
+            mask = mKeyMask.updateAndGet(old -> old | keyBit);
         } else {
-            mKeyMask &= ~keyBit;
+            mask = mKeyMask.updateAndGet(old -> old & ~keyBit);
         }
-        
-        if (oldMask != mKeyMask) {
-            mActivity.setKeysJNI(mKeyMask);
-        }
+        mEmuThread.setInputMask(mask);
     }
 
+    /** Handle a physical gamepad key event.  Returns true if consumed. */
     public boolean handleGamepadKeyEvent(KeyEvent event) {
         boolean pressed = event.getAction() == KeyEvent.ACTION_DOWN;
         int keyCode = event.getKeyCode();
-        
-        Log.d("FroggBA_Gamepad", "KeyEvent: " + keyCode + " (" + KeyEvent.keyCodeToString(keyCode) + ") action: " + event.getAction());
-        
-        int gbaKey = -1;
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BUTTON_A: gbaKey = GBA_KEY_A; break;
-            case KeyEvent.KEYCODE_BUTTON_B: gbaKey = GBA_KEY_B; break;
-            case KeyEvent.KEYCODE_DPAD_UP: gbaKey = GBA_KEY_UP; break;
-            case KeyEvent.KEYCODE_DPAD_DOWN: gbaKey = GBA_KEY_DOWN; break;
-            case KeyEvent.KEYCODE_DPAD_LEFT: gbaKey = GBA_KEY_LEFT; break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT: gbaKey = GBA_KEY_RIGHT; break;
-            case KeyEvent.KEYCODE_BUTTON_L1: gbaKey = GBA_KEY_L; break;
-            case KeyEvent.KEYCODE_BUTTON_R1: gbaKey = GBA_KEY_R; break;
-            case KeyEvent.KEYCODE_BUTTON_START: gbaKey = GBA_KEY_START; break;
-            case KeyEvent.KEYCODE_BUTTON_SELECT: gbaKey = GBA_KEY_SELECT; break;
-        }
-        
-        if (gbaKey != -1) {
+
+        int gbaKey = mapKeyCode(keyCode);
+        if (gbaKey != 0) {
             setKeyPressed(gbaKey, pressed);
             return true;
         }
         return false;
     }
 
+    /** Handle analog stick / hat events.  Returns true if consumed. */
     public boolean handleGamepadMotionEvent(MotionEvent event) {
-        float x = event.getAxisValue(MotionEvent.AXIS_X);
-        float y = event.getAxisValue(MotionEvent.AXIS_Y);
+        float x    = event.getAxisValue(MotionEvent.AXIS_X);
+        float y    = event.getAxisValue(MotionEvent.AXIS_Y);
         float hatX = event.getAxisValue(MotionEvent.AXIS_HAT_X);
         float hatY = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
-        
-        // Log analog sticks to verify what RG556 sends for D-pad/stick
-        Log.d("FroggBA_Gamepad", "MotionEvent X: " + x + ", Y: " + y + " HAT_X: " + hatX + " HAT_Y: " + hatY);
-        
+
         float threshold = 0.5f;
-        setKeyPressed(GBA_KEY_LEFT, x < -threshold || hatX < -threshold);
-        setKeyPressed(GBA_KEY_RIGHT, x > threshold || hatX > threshold);
-        setKeyPressed(GBA_KEY_UP, y < -threshold || hatY < -threshold);
-        setKeyPressed(GBA_KEY_DOWN, y > threshold || hatY > threshold);
-        
+        setKeyPressed(GBA_KEY_LEFT,  x < -threshold || hatX < -threshold);
+        setKeyPressed(GBA_KEY_RIGHT, x >  threshold || hatX >  threshold);
+        setKeyPressed(GBA_KEY_UP,    y < -threshold || hatY < -threshold);
+        setKeyPressed(GBA_KEY_DOWN,  y >  threshold || hatY >  threshold);
+
         return true;
+    }
+
+    private static int mapKeyCode(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_BUTTON_A:      return GBA_KEY_A;
+            case KeyEvent.KEYCODE_BUTTON_B:      return GBA_KEY_B;
+            case KeyEvent.KEYCODE_DPAD_UP:       return GBA_KEY_UP;
+            case KeyEvent.KEYCODE_DPAD_DOWN:     return GBA_KEY_DOWN;
+            case KeyEvent.KEYCODE_DPAD_LEFT:     return GBA_KEY_LEFT;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:    return GBA_KEY_RIGHT;
+            case KeyEvent.KEYCODE_BUTTON_L1:     return GBA_KEY_L;
+            case KeyEvent.KEYCODE_BUTTON_R1:     return GBA_KEY_R;
+            case KeyEvent.KEYCODE_BUTTON_START:  return GBA_KEY_START;
+            case KeyEvent.KEYCODE_BUTTON_SELECT: return GBA_KEY_SELECT;
+            default: return 0;
+        }
     }
 }

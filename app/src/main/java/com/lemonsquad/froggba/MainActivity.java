@@ -2,127 +2,152 @@ package com.lemonsquad.froggba;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.opengl.GLSurfaceView;
-import android.view.MotionEvent;
-import android.view.KeyEvent;
+import android.provider.OpenableColumns;
 import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import android.widget.Button;
-import android.media.AudioTrack;
-import android.media.AudioManager;
-import android.media.AudioFormat;
-import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
-    static {
-        System.loadLibrary("mygbaemulator");
-    }
-
     private static final int PICK_ROM_REQUEST = 1;
 
-    private GLSurfaceView mGLView;
-    private EmulatorRenderer mRenderer;
-    private InputManager mInputManager;
-    private AudioThread mAudioThread;
-    private boolean mIsEmulatorRunning = false;
+    private GLSurfaceView     mGLView;
+    private EmulatorRenderer   mRenderer;
+    private EmulationThread    mEmuThread;
+    private InputManager       mInputManager;
+
+    private View    mTouchControls;
+    private Button  mBtnUpscaler;
+    private TextView mTxtRomTitle;
+
     private int mUpscalerState = 0;
 
-    
-    // Lock to prevent concurrent mGBA core access (e.g. runFrame vs readAudio)
-    private final Object mCoreLock = new Object();
-
-    public Object getCoreLock() {
-        return mCoreLock;
-    }
+    // ── Lifecycle ───────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        mInputManager = new InputManager(this);
-        
+
+        // Immersive fullscreen
+        applyImmersiveMode();
+
+        // Start the emulation thread (idles until a ROM is loaded)
+        mEmuThread = new EmulationThread();
+        mEmuThread.setCallback(new EmulationThread.Callback() {
+            @Override
+            public void onRomLoaded(final ByteBuffer displayBuffer, final String romName) {
+                runOnUiThread(() -> {
+                    mRenderer.setFrameBuffer(displayBuffer);
+                    if (mTxtRomTitle != null && romName != null) {
+                        mTxtRomTitle.setText(romName);
+                        mTxtRomTitle.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+            @Override
+            public void onRomLoadFailed() {
+                // Could show a Toast here
+            }
+        });
+        mEmuThread.start();
+
+        mInputManager = new InputManager(mEmuThread);
+
+        // GL Surface
         mGLView = new GLSurfaceView(this);
         mGLView.setEGLContextClientVersion(2);
-        mRenderer = new EmulatorRenderer(this);
+        mRenderer = new EmulatorRenderer();
         mGLView.setRenderer(mRenderer);
-        
+        // Render continuously so we always show the latest published frame
+        mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
         FrameLayout glContainer = findViewById(R.id.gl_container);
         glContainer.addView(mGLView);
-        
-        setupButton(R.id.btn_a, InputManager.GBA_KEY_A);
-        setupButton(R.id.btn_b, InputManager.GBA_KEY_B);
+
+        // Touch controls container
+        mTouchControls = findViewById(R.id.touch_controls);
+
+        // Setup touch buttons
+        setupButton(R.id.btn_a,      InputManager.GBA_KEY_A);
+        setupButton(R.id.btn_b,      InputManager.GBA_KEY_B);
         setupButton(R.id.btn_select, InputManager.GBA_KEY_SELECT);
-        setupButton(R.id.btn_start, InputManager.GBA_KEY_START);
-        setupButton(R.id.btn_up, InputManager.GBA_KEY_UP);
-        setupButton(R.id.btn_down, InputManager.GBA_KEY_DOWN);
-        setupButton(R.id.btn_left, InputManager.GBA_KEY_LEFT);
-        setupButton(R.id.btn_right, InputManager.GBA_KEY_RIGHT);
-        setupButton(R.id.btn_l, InputManager.GBA_KEY_L);
-        setupButton(R.id.btn_r, InputManager.GBA_KEY_R);
-        
-        
-        Button btnUpscaler = findViewById(R.id.btn_upscaler);
-        btnUpscaler.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mUpscalerState = (mUpscalerState + 1) % 2;
-                if (mUpscalerState == 0) {
-                    mRenderer.setUpscaler(EmulatorRenderer.Upscaler.NEAREST);
-                    Log.d("FroggBA_Shader", "Switched to NEAREST");
-                } else {
-                    mRenderer.setUpscaler(EmulatorRenderer.Upscaler.SCALE2X);
-                    Log.d("FroggBA_Shader", "Switched to SCALE2X");
-                }
+        setupButton(R.id.btn_start,  InputManager.GBA_KEY_START);
+        setupButton(R.id.btn_up,     InputManager.GBA_KEY_UP);
+        setupButton(R.id.btn_down,   InputManager.GBA_KEY_DOWN);
+        setupButton(R.id.btn_left,   InputManager.GBA_KEY_LEFT);
+        setupButton(R.id.btn_right,  InputManager.GBA_KEY_RIGHT);
+        setupButton(R.id.btn_l,      InputManager.GBA_KEY_L);
+        setupButton(R.id.btn_r,      InputManager.GBA_KEY_R);
+
+        // Shader toggle
+        mBtnUpscaler = findViewById(R.id.btn_upscaler);
+        mBtnUpscaler.setOnClickListener(v -> {
+            mUpscalerState = (mUpscalerState + 1) % 2;
+            if (mUpscalerState == 0) {
+                mRenderer.setUpscaler(EmulatorRenderer.Upscaler.NEAREST);
+                mBtnUpscaler.setText("Nearest");
+            } else {
+                mRenderer.setUpscaler(EmulatorRenderer.Upscaler.SCALE2X);
+                mBtnUpscaler.setText("Scale2x");
             }
         });
 
-        Button btnLoad = findViewById(R.id.btn_load_rom);
-        btnLoad.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("*/*");
-                startActivityForResult(intent, PICK_ROM_REQUEST);
-            }
+        // Load ROM
+        mTxtRomTitle = findViewById(R.id.txt_rom_title);
+        findViewById(R.id.btn_load_rom).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            startActivityForResult(intent, PICK_ROM_REQUEST);
         });
-    }
-    
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        int source = event.getSource();
-        if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
-            (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD ||
-            (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
-            
-            if (mInputManager.handleGamepadKeyEvent(event)) {
-                return true;
-            }
-        }
-        return super.dispatchKeyEvent(event);
+
+        // Auto-hide touch controls if physical gamepad is detected
+        updateTouchControlsVisibility();
     }
 
     @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent event) {
-        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK &&
-            event.getAction() == MotionEvent.ACTION_MOVE) {
-            
-            if (mInputManager.handleGamepadMotionEvent(event)) {
-                return true;
-            }
-        }
-        return super.dispatchGenericMotionEvent(event);
+    protected void onResume() {
+        super.onResume();
+        applyImmersiveMode();
+        if (mGLView != null) mGLView.onResume();
+        if (mEmuThread != null) mEmuThread.resumeEmulation();
+        updateTouchControlsVisibility();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mEmuThread != null) mEmuThread.pauseEmulation();
+        if (mGLView != null) mGLView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mEmuThread != null) {
+            mEmuThread.stopEmulation();
+            try { mEmuThread.join(2000); } catch (InterruptedException ignored) {}
+        }
+    }
+
+    // ── ROM loading ─────────────────────────────────────────────────
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -130,86 +155,19 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PICK_ROM_REQUEST && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             if (uri != null) {
-                String tempPath = copyUriToTempFile(uri);
+                String displayName = getDisplayName(uri);
+                String tempPath = copyUriToInternalStorage(uri, displayName);
                 if (tempPath != null) {
-                    stopEmulator();
-                    
-                    ByteBuffer buffer;
-                    synchronized(mCoreLock) {
-                        buffer = initEmulatorJNI(tempPath);
-                    }
-                    if (buffer != null) {
-                        mRenderer.setFrameBuffer(buffer);
-                        startEmulator();
-                    }
+                    mEmuThread.loadRom(tempPath, displayName);
                 }
             }
         }
     }
 
-    private void startEmulator() {
-        mIsEmulatorRunning = true;
-        if (mAudioThread != null) {
-            mAudioThread.halt();
-        }
-        mAudioThread = new AudioThread();
-        mAudioThread.start();
-    }
-
-    private void stopEmulator() {
-        mIsEmulatorRunning = false;
-        if (mAudioThread != null) {
-            mAudioThread.halt();
-            mAudioThread = null;
-        }
-    }
-
-    private class AudioThread extends Thread {
-        private volatile boolean mRunning = true;
-        private AudioTrack mAudioTrack;
-
-        public void halt() {
-            mRunning = false;
-        }
-
-        @Override
-        public void run() {
-            int sampleRate;
-            synchronized(mCoreLock) {
-                sampleRate = getSampleRateJNI();
-            }
-            int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
-            
-            int bufferSize = Math.max(minBufferSize, sampleRate / 10 * 4); // ~100ms buffer
-            
-            mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, 
-                    AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT, 
-                    bufferSize, AudioTrack.MODE_STREAM);
-            
-            mAudioTrack.play();
-            
-            int capacityFrames = 1024;
-            short[] buffer = new short[capacityFrames * 2]; // 2 channels
-            
-            while (mRunning) {
-                int framesRead = 0;
-                synchronized(mCoreLock) {
-                    framesRead = readAudioJNI(buffer, capacityFrames);
-                }
-                if (framesRead > 0) {
-                    mAudioTrack.write(buffer, 0, framesRead * 2);
-                } else {
-                    try { Thread.sleep(2); } catch (Exception e) { }
-                }
-            }
-            
-            mAudioTrack.stop();
-            mAudioTrack.release();
-        }
-    }
-
-    private String copyUriToTempFile(Uri uri) {
-        File outFile = new File(getFilesDir(), "current_rom.gba");
+    /** Copy the ROM to internal storage using the original filename,
+     *  so each game gets its own save file. */
+    private String copyUriToInternalStorage(Uri uri, String filename) {
+        File outFile = new File(getFilesDir(), filename);
         try (InputStream is = getContentResolver().openInputStream(uri);
              FileOutputStream fos = new FileOutputStream(outFile)) {
             byte[] buffer = new byte[8192];
@@ -224,45 +182,92 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupButton(int viewId, final int keyBit) {
-        findViewById(viewId).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_DOWN:
-                    case MotionEvent.ACTION_POINTER_DOWN:
-                        mInputManager.setKeyPressed(keyBit, true);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_POINTER_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        mInputManager.setKeyPressed(keyBit, false);
-                        break;
-                }
-                return true;
+    private String getDisplayName(Uri uri) {
+        String name = "rom.gba";
+        try (Cursor cursor = getContentResolver().query(
+                uri, new String[]{OpenableColumns.DISPLAY_NAME},
+                null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                name = cursor.getString(0);
             }
+        }
+        return name;
+    }
+
+    // ── Gamepad input dispatch ───────────────────────────────────────
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int source = event.getSource();
+        if ((source & InputDevice.SOURCE_GAMEPAD)  == InputDevice.SOURCE_GAMEPAD  ||
+            (source & InputDevice.SOURCE_DPAD)     == InputDevice.SOURCE_DPAD     ||
+            (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+            if (mInputManager.handleGamepadKeyEvent(event)) return true;
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK &&
+             event.getAction() == MotionEvent.ACTION_MOVE) {
+            if (mInputManager.handleGamepadMotionEvent(event)) return true;
+        }
+        return super.dispatchGenericMotionEvent(event);
+    }
+
+    // ── Touch button wiring ─────────────────────────────────────────
+
+    private void setupButton(int viewId, final int keyBit) {
+        findViewById(viewId).setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    mInputManager.setKeyPressed(keyBit, true);
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_POINTER_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    mInputManager.setKeyPressed(keyBit, false);
+                    break;
+            }
+            return true;
         });
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mGLView != null) mGLView.onPause();
-        stopEmulator();
-    }
+    // ── UI helpers ──────────────────────────────────────────────────
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mGLView != null) mGLView.onResume();
-        if (mRenderer != null && mIsEmulatorRunning) {
-             startEmulator();
+    private void applyImmersiveMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowInsetsController wic = getWindow().getInsetsController();
+            if (wic != null) {
+                wic.hide(WindowInsets.Type.systemBars());
+                wic.setSystemBarsBehavior(
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
     }
 
-    public native ByteBuffer initEmulatorJNI(String path);
-    public native void runFrameJNI();
-    public native void setKeysJNI(int mask);
-    public native int getSampleRateJNI();
-    public native int readAudioJNI(short[] samples, int capacityFrames);
+    /** Hide on-screen touch controls when a physical gamepad is present. */
+    private void updateTouchControlsVisibility() {
+        if (mTouchControls == null) return;
+        boolean hasGamepad = false;
+        for (int id : InputDevice.getDeviceIds()) {
+            InputDevice dev = InputDevice.getDevice(id);
+            if (dev != null &&
+                (dev.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+                hasGamepad = true;
+                break;
+            }
+        }
+        mTouchControls.setVisibility(hasGamepad ? View.GONE : View.VISIBLE);
+    }
 }

@@ -198,3 +198,7 @@
 1	109	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/armeabi-v7a/mGBA-core/CMakeFiles/mgba-version-info	322aafd58e615ed3
 2	122	0	mGBA-core/CMakeFiles/mgba-version-info	322aafd58e615ed3
 2	122	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/armeabi-v7a/mGBA-core/CMakeFiles/mgba-version-info	322aafd58e615ed3
+4	115	0	mGBA-core/CMakeFiles/mgba-version-info	322aafd58e615ed3
+4	115	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/armeabi-v7a/mGBA-core/CMakeFiles/mgba-version-info	322aafd58e615ed3
+115	237	1787228856942804611	CMakeFiles/mygbaemulator.dir/native-lib.cpp.o	5f196b277fbbb458
+237	283	1787228856987803720	/workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/armeabi-v7a/libmygbaemulator.so	f5346a2c5ea74d8c

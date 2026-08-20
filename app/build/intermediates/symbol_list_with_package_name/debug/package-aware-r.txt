@@ -3472,6 +3472,7 @@ id title_template
 id toggle
 id top
 id topPanel
+id touch_controls
 id touch_outside
 id transitionToEnd
 id transitionToStart
@@ -3481,6 +3482,7 @@ id transition_position
 id transition_scene_layoutid_cache
 id transition_transform
 id triangle
+id txt_rom_title
 id unchecked
 id uniform
 id unlabeled
