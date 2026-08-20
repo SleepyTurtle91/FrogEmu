@@ -14,6 +14,10 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import android.widget.Button;
+import android.media.AudioTrack;
+import android.media.AudioManager;
+import android.media.AudioFormat;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     private GLSurfaceView mGLView;
     private EmulatorRenderer mRenderer;
     private InputManager mInputManager;
+    private AudioThread mAudioThread;
+    private boolean mIsEmulatorRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,12 +79,71 @@ public class MainActivity extends AppCompatActivity {
             if (uri != null) {
                 String tempPath = copyUriToTempFile(uri);
                 if (tempPath != null) {
+                    stopEmulator();
+                    
                     ByteBuffer buffer = initEmulatorJNI(tempPath);
                     if (buffer != null) {
                         mRenderer.setFrameBuffer(buffer);
+                        startEmulator();
                     }
                 }
             }
+        }
+    }
+
+    private void startEmulator() {
+        mIsEmulatorRunning = true;
+        if (mAudioThread != null) {
+            mAudioThread.halt();
+        }
+        mAudioThread = new AudioThread();
+        mAudioThread.start();
+    }
+
+    private void stopEmulator() {
+        mIsEmulatorRunning = false;
+        if (mAudioThread != null) {
+            mAudioThread.halt();
+            mAudioThread = null;
+        }
+    }
+
+    private class AudioThread extends Thread {
+        private volatile boolean mRunning = true;
+        private AudioTrack mAudioTrack;
+
+        public void halt() {
+            mRunning = false;
+        }
+
+        @Override
+        public void run() {
+            int sampleRate = getSampleRateJNI();
+            int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+            
+            // Allocate a robust buffer size to prevent underruns
+            int bufferSize = Math.max(minBufferSize, sampleRate / 10 * 4); // ~100ms buffer
+            
+            mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, 
+                    AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT, 
+                    bufferSize, AudioTrack.MODE_STREAM);
+            
+            mAudioTrack.play();
+            
+            int capacityFrames = 1024;
+            short[] buffer = new short[capacityFrames * 2]; // 2 channels
+            
+            while (mRunning) {
+                int framesRead = readAudioJNI(buffer, capacityFrames);
+                if (framesRead > 0) {
+                    mAudioTrack.write(buffer, 0, framesRead * 2);
+                } else {
+                    try { Thread.sleep(2); } catch (Exception e) { }
+                }
+            }
+            
+            mAudioTrack.stop();
+            mAudioTrack.release();
         }
     }
 
@@ -122,15 +187,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (mGLView != null) mGLView.onPause();
+        stopEmulator();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (mGLView != null) mGLView.onResume();
+        if (mRenderer != null && mIsEmulatorRunning) {
+             startEmulator();
+        }
     }
 
     public native ByteBuffer initEmulatorJNI(String path);
     public native void runFrameJNI();
     public native void setKeysJNI(int mask);
+    public native int getSampleRateJNI();
+    public native int readAudioJNI(short[] samples, int capacityFrames);
 }

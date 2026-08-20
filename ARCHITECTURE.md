@@ -64,7 +64,7 @@ To maintain stability, FroggBA will be implemented in the following phases:
 | Milestone 3: Frame execution | ✅                          |
 | Milestone 4: First frame     | ✅                          |
 | Milestone 5: Input + controls| 🔜 **Now**                 |
-| Milestone 6: Audio           | ⏳                          |
+| Milestone 6: Audio           | ✅                          |
 | Milestone 7: Real ROM testing| ⏳                          |
 | Milestone 8: Link multiplayer| 🔬 Research                |
 | Upscaler                     | ⏳                          |

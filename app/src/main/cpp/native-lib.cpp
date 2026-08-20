@@ -10,6 +10,7 @@
 extern "C" {
 #include <mgba/core/core.h>
 #include <mgba-util/vfs.h>
+#include <mgba-util/audio-buffer.h>
 }
 
 #define LOG_TAG "FroggBA"
@@ -72,6 +73,10 @@ Java_com_lemonsquad_froggba_MainActivity_initEmulatorJNI(JNIEnv* env, jobject, j
     g_core->baseVideoSize(g_core, &g_width, &g_height);
     g_videoBuffer = (uint32_t*) calloc(g_width * g_height, sizeof(uint32_t));
     g_core->setVideoBuffer(g_core, g_videoBuffer, g_width);
+    
+    // Initialize Audio Buffer
+    g_core->setAudioBufferSize(g_core, 8192); // 8192 frames buffer
+    
     g_core->reset(g_core);
     
     LOGI("Emulator Initialized successfully! Resolution: %ux%u", g_width, g_height);
@@ -92,4 +97,28 @@ Java_com_lemonsquad_froggba_MainActivity_setKeysJNI(JNIEnv* env, jobject, jint m
     if (g_core) {
         g_core->setKeys(g_core, mask);
     }
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_lemonsquad_froggba_MainActivity_getSampleRateJNI(JNIEnv* env, jobject) {
+    if (g_core) {
+        return g_core->audioSampleRate(g_core);
+    }
+    return 44100;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_com_lemonsquad_froggba_MainActivity_readAudioJNI(JNIEnv* env, jobject, jshortArray samples, jint capacityFrames) {
+    if (!g_core) return 0;
+    
+    struct mAudioBuffer* audioBuf = g_core->getAudioBuffer(g_core);
+    if (!audioBuf) return 0;
+    
+    jshort* buf = env->GetShortArrayElements(samples, nullptr);
+    
+    size_t framesRead = mAudioBufferRead(audioBuf, (int16_t*)buf, capacityFrames);
+    
+    env->ReleaseShortArrayElements(samples, buf, 0);
+    
+    return framesRead;
 }
