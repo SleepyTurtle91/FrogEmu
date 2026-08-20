@@ -10,6 +10,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Top UI -->
+    <Button
+        android:id="@+id/btn_load_rom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Load ROM"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:background="#88000000"
+        android:textColor="#FFFFFF"/>
+
     <!-- D-Pad -->
     <RelativeLayout
         android:layout_width="150dp"
@@ -19,10 +31,10 @@
         android:layout_marginBottom="30dp"
         android:layout_marginLeft="30dp">
 
-        <Button android:id="@+id/btn_up" android:layout_width="50dp" android:layout_height="50dp" android:text="↑" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
-        <Button android:id="@+id/btn_down" android:layout_width="50dp" android:layout_height="50dp" android:text="↓" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
-        <Button android:id="@+id/btn_left" android:layout_width="50dp" android:layout_height="50dp" android:text="←" android:layout_centerVertical="true" android:layout_alignParentLeft="true"/>
-        <Button android:id="@+id/btn_right" android:layout_width="50dp" android:layout_height="50dp" android:text="→" android:layout_centerVertical="true" android:layout_alignParentRight="true"/>
+        <Button android:id="@+id/btn_up" android:layout_width="50dp" android:layout_height="50dp" android:text="↑" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:background="#88FFFFFF"/>
+        <Button android:id="@+id/btn_down" android:layout_width="50dp" android:layout_height="50dp" android:text="↓" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true" android:background="#88FFFFFF"/>
+        <Button android:id="@+id/btn_left" android:layout_width="50dp" android:layout_height="50dp" android:text="←" android:layout_centerVertical="true" android:layout_alignParentLeft="true" android:background="#88FFFFFF"/>
+        <Button android:id="@+id/btn_right" android:layout_width="50dp" android:layout_height="50dp" android:text="→" android:layout_centerVertical="true" android:layout_alignParentRight="true" android:background="#88FFFFFF"/>
     </RelativeLayout>
 
     <!-- A/B Buttons -->
@@ -34,13 +46,13 @@
         android:layout_marginBottom="50dp"
         android:layout_marginRight="30dp">
 
-        <Button android:id="@+id/btn_b" android:layout_width="50dp" android:layout_height="50dp" android:text="B" android:layout_alignParentBottom="true" android:layout_alignParentLeft="true"/>
-        <Button android:id="@+id/btn_a" android:layout_width="50dp" android:layout_height="50dp" android:text="A" android:layout_alignParentTop="true" android:layout_alignParentRight="true"/>
+        <Button android:id="@+id/btn_b" android:layout_width="50dp" android:layout_height="50dp" android:text="B" android:layout_alignParentBottom="true" android:layout_alignParentLeft="true" android:background="#88FF0000" android:textColor="#FFF"/>
+        <Button android:id="@+id/btn_a" android:layout_width="50dp" android:layout_height="50dp" android:text="A" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:background="#88FF0000" android:textColor="#FFF"/>
     </RelativeLayout>
 
     <!-- L/R Buttons -->
-    <Button android:id="@+id/btn_l" android:layout_width="80dp" android:layout_height="50dp" android:text="L" android:layout_alignParentTop="true" android:layout_alignParentLeft="true" android:layout_marginTop="10dp" android:layout_marginLeft="10dp"/>
-    <Button android:id="@+id/btn_r" android:layout_width="80dp" android:layout_height="50dp" android:text="R" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:layout_marginTop="10dp" android:layout_marginRight="10dp"/>
+    <Button android:id="@+id/btn_l" android:layout_width="80dp" android:layout_height="50dp" android:text="L" android:layout_alignParentTop="true" android:layout_alignParentLeft="true" android:layout_marginTop="10dp" android:layout_marginLeft="10dp" android:background="#88FFFFFF"/>
+    <Button android:id="@+id/btn_r" android:layout_width="80dp" android:layout_height="50dp" android:text="R" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:layout_marginTop="10dp" android:layout_marginRight="10dp" android:background="#88FFFFFF"/>
 
     <!-- Select/Start Buttons -->
     <LinearLayout
@@ -51,8 +63,8 @@
         android:layout_marginBottom="20dp"
         android:orientation="horizontal">
         
-        <Button android:id="@+id/btn_select" android:layout_width="70dp" android:layout_height="40dp" android:text="SEL" android:textSize="12sp" android:layout_marginRight="10dp"/>
-        <Button android:id="@+id/btn_start" android:layout_width="70dp" android:layout_height="40dp" android:text="START" android:textSize="12sp" android:layout_marginLeft="10dp"/>
+        <Button android:id="@+id/btn_select" android:layout_width="70dp" android:layout_height="40dp" android:text="SEL" android:textSize="12sp" android:layout_marginRight="10dp" android:background="#88FFFFFF"/>
+        <Button android:id="@+id/btn_start" android:layout_width="70dp" android:layout_height="40dp" android:text="START" android:textSize="12sp" android:layout_marginLeft="10dp" android:background="#88FFFFFF"/>
     </LinearLayout>
 
 </RelativeLayout>

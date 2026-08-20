@@ -3101,6 +3101,7 @@ id btn_b
 id btn_down
 id btn_l
 id btn_left
+id btn_load_rom
 id btn_r
 id btn_right
 id btn_select

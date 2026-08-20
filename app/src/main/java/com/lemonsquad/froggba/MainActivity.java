@@ -1,6 +1,8 @@
 package com.lemonsquad.froggba;
 
 import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
@@ -11,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,7 +21,10 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("mygbaemulator");
     }
 
+    private static final int PICK_ROM_REQUEST = 1;
+
     private GLSurfaceView mGLView;
+    private EmulatorRenderer mRenderer;
     private InputManager mInputManager;
 
     @Override
@@ -30,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
         
         mGLView = new GLSurfaceView(this);
         mGLView.setEGLContextClientVersion(2);
-        EmulatorRenderer renderer = new EmulatorRenderer(this);
-        mGLView.setRenderer(renderer);
+        mRenderer = new EmulatorRenderer(this);
+        mGLView.setRenderer(mRenderer);
         
         FrameLayout glContainer = findViewById(R.id.gl_container);
         glContainer.addView(mGLView);
@@ -47,12 +53,48 @@ public class MainActivity extends AppCompatActivity {
         setupButton(R.id.btn_l, InputManager.GBA_KEY_L);
         setupButton(R.id.btn_r, InputManager.GBA_KEY_R);
         
-        String romPath = extractAsset("test.gba");
-        if (romPath != null) {
-            ByteBuffer buffer = initEmulatorJNI(romPath);
-            if (buffer != null) {
-                renderer.setFrameBuffer(buffer);
+        Button btnLoad = findViewById(R.id.btn_load_rom);
+        btnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("*/*");
+                startActivityForResult(intent, PICK_ROM_REQUEST);
             }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_ROM_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+                String tempPath = copyUriToTempFile(uri);
+                if (tempPath != null) {
+                    ByteBuffer buffer = initEmulatorJNI(tempPath);
+                    if (buffer != null) {
+                        mRenderer.setFrameBuffer(buffer);
+                    }
+                }
+            }
+        }
+    }
+
+    private String copyUriToTempFile(Uri uri) {
+        File outFile = new File(getFilesDir(), "current_rom.gba");
+        try (InputStream is = getContentResolver().openInputStream(uri);
+             FileOutputStream fos = new FileOutputStream(outFile)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+            }
+            return outFile.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -86,24 +128,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (mGLView != null) mGLView.onResume();
-    }
-
-    private String extractAsset(String assetName) {
-        File outFile = new File(getFilesDir(), assetName);
-        if (outFile.exists()) return outFile.getAbsolutePath();
-        
-        try (InputStream is = getAssets().open(assetName);
-             FileOutputStream fos = new FileOutputStream(outFile)) {
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = is.read(buffer)) != -1) {
-                fos.write(buffer, 0, read);
-            }
-            return outFile.getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public native ByteBuffer initEmulatorJNI(String path);
