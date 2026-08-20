@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
+import android.view.KeyEvent;
+import android.view.InputDevice;
 import android.view.View;
 import android.widget.FrameLayout;
 import java.io.File;
@@ -70,6 +72,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int source = event.getSource();
+        if ((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD ||
+            (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD ||
+            (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+            
+            if (mInputManager.handleGamepadKeyEvent(event)) {
+                return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK &&
+            event.getAction() == MotionEvent.ACTION_MOVE) {
+            
+            if (mInputManager.handleGamepadMotionEvent(event)) {
+                return true;
+            }
+        }
+        return super.dispatchGenericMotionEvent(event);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -121,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
             int sampleRate = getSampleRateJNI();
             int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
             
-            // Allocate a robust buffer size to prevent underruns
             int bufferSize = Math.max(minBufferSize, sampleRate / 10 * 4); // ~100ms buffer
             
             mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, 
