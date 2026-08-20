@@ -4,6 +4,19 @@ All notable changes to **FrogEmu** are documented in this file.
 
 ---
 
+## [v1.4.0] — 2026-08-20
+
+### Added
+- **Phase 8: Instant Save State & Slot Subsystem**:
+  - **Native Save & Load State Engine**: JNI virtualization bridge directly calling mGBA `g_core->saveState()` and `g_core->loadState()` on byte-exact memory buffers.
+  - **Multi-Slot State Architecture**: 5 dedicated save state slots (`Slot 0 Quick Save`, `Slot 1`, `Slot 2`, `Slot 3`, `Slot 4`) per game with persistent file storage (`files/states/<GameCode>_slot<N>.state`).
+  - **Thread-Safe State Dispatch**: Non-blocking `mStateQueue` evaluated deterministically at frame loop boundary step 4.6 on `EmulationThread` with UI callback handoff.
+  - **Interactive Saves Control Plane**:
+    - Real-time timestamp badge and file size indicator per slot.
+    - Dedicated `[ 💾 Save ]`, `[ 📂 Load ]` (auto-disabled on empty slots), and `[ 🗑️ Delete ]` actions with instant UI refresh.
+
+---
+
 ## [v1.3.0] — 2026-08-20
 
 ### Added

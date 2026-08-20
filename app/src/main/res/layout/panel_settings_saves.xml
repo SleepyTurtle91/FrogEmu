@@ -4,41 +4,69 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <TextView
+    <!-- Active Game Header Card -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save States &amp; Battery SRAM"
-        android:textColor="#00FF66"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="6dp" />
+        android:orientation="vertical"
+        android:background="#15FFFFFF"
+        android:padding="10dp"
+        android:layout_marginBottom="10dp">
 
-    <TextView
-        android:id="@+id/txt_save_directory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="SRAM Path: /data/user/0/com.lemonsquad.froggba/files/"
-        android:textColor="#AAAAAA"
-        android:textSize="12sp"
-        android:fontFamily="monospace"
-        android:layout_marginBottom="12dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+            <TextView
+                android:id="@+id/txt_state_game_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="No ROM Loaded"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_state_game_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UNKNOWN"
+                android:textColor="#00FF66"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:background="#2200FF66"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txt_state_storage_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Storage: /data/user/0/com.lemonsquad.froggba/files/states/"
+            android:textColor="#888888"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Save State Slots"
         android:textColor="#00FF66"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:textStyle="bold"
-        android:layout_marginBottom="6dp" />
+        android:layout_marginBottom="8dp" />
 
-    <TextView
+    <!-- Dynamic Slot Rows Container -->
+    <LinearLayout
+        android:id="@+id/layout_slots_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Phase 8 Feature: Instant save states, multi-slot manager, and preview thumbnail snapshots."
-        android:textColor="#777777"
-        android:textSize="12sp" />
+        android:orientation="vertical" />
 
 </LinearLayout>

@@ -171,7 +171,7 @@ Java_com_lemonsquad_froggba_EmulationThread_initCoreJNI(JNIEnv* env, jobject, js
     g_core->setAudioBufferSize(g_core, 8192);
     g_core->reset(g_core);
 
-    LOGI("Emulator ready with Link Adapter & Cheat Subsystem attached. Resolution: %ux%u", g_width, g_height);
+    LOGI("Emulator ready with Link Adapter, Cheats & State engine. Resolution: %ux%u", g_width, g_height);
     env->ReleaseStringUTFChars(path, nativePath);
 
     // The GL thread receives a view into the DISPLAY buffer only.
@@ -320,6 +320,95 @@ Java_com_lemonsquad_froggba_EmulationThread_loadCheatsFromLinesJNI(
 
     env->ReleaseBooleanArrayElements(enabledFlags, flags, JNI_ABORT);
     LOGI("Loaded %d cheat sets into mCheatDevice.", (int)count);
+}
+
+// ── Save State & Load State JNI (EmulationThread ONLY) ───────────────
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_lemonsquad_froggba_EmulationThread_saveStateJNI(
+        JNIEnv* env, jobject, jstring filePath) {
+    if (!g_core || !g_core->saveState || !g_core->stateSize) return JNI_FALSE;
+
+    const char* nativePath = env->GetStringUTFChars(filePath, nullptr);
+    size_t size = g_core->stateSize(g_core);
+    if (size == 0) {
+        env->ReleaseStringUTFChars(filePath, nativePath);
+        return JNI_FALSE;
+    }
+
+    void* buffer = malloc(size);
+    if (!buffer) {
+        env->ReleaseStringUTFChars(filePath, nativePath);
+        return JNI_FALSE;
+    }
+
+    bool success = g_core->saveState(g_core, buffer);
+    if (success) {
+        FILE* f = fopen(nativePath, "wb");
+        if (f) {
+            size_t written = fwrite(buffer, 1, size, f);
+            fclose(f);
+            success = (written == size);
+            LOGI("Saved state to %s (%zu bytes, success=%d)", nativePath, size, (int)success);
+        } else {
+            LOGE("Failed opening save state file: %s", nativePath);
+            success = false;
+        }
+    } else {
+        LOGE("g_core->saveState failed.");
+    }
+
+    free(buffer);
+    env->ReleaseStringUTFChars(filePath, nativePath);
+    return success ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_lemonsquad_froggba_EmulationThread_loadStateJNI(
+        JNIEnv* env, jobject, jstring filePath) {
+    if (!g_core || !g_core->loadState || !g_core->stateSize) return JNI_FALSE;
+
+    const char* nativePath = env->GetStringUTFChars(filePath, nullptr);
+    FILE* f = fopen(nativePath, "rb");
+    if (!f) {
+        LOGE("Failed opening load state file: %s", nativePath);
+        env->ReleaseStringUTFChars(filePath, nativePath);
+        return JNI_FALSE;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long fileSize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    size_t expectedSize = g_core->stateSize(g_core);
+    if (fileSize <= 0 || (size_t)fileSize != expectedSize) {
+        LOGE("Save state size mismatch (file=%ld, expected=%zu)", fileSize, expectedSize);
+        fclose(f);
+        env->ReleaseStringUTFChars(filePath, nativePath);
+        return JNI_FALSE;
+    }
+
+    void* buffer = malloc(expectedSize);
+    if (!buffer) {
+        fclose(f);
+        env->ReleaseStringUTFChars(filePath, nativePath);
+        return JNI_FALSE;
+    }
+
+    size_t readBytes = fread(buffer, 1, expectedSize, f);
+    fclose(f);
+
+    bool success = false;
+    if (readBytes == expectedSize) {
+        success = g_core->loadState(g_core, buffer);
+        LOGI("Loaded state from %s (success=%d)", nativePath, (int)success);
+    } else {
+        LOGE("Failed reading full state buffer.");
+    }
+
+    free(buffer);
+    env->ReleaseStringUTFChars(filePath, nativePath);
+    return success ? JNI_TRUE : JNI_FALSE;
 }
 
 // ── getSampleRateJNI ────────────────────────────────────────────────

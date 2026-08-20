@@ -52,11 +52,12 @@ public class SettingsDialog {
     private Runnable mTickRunnable;
 
     public SettingsDialog(Context context, LinkManager linkManager, OnSettingsChangedListener listener) {
-        this(context, linkManager, null, listener);
+        this(context, linkManager, null, null, listener);
     }
 
     public SettingsDialog(Context context, LinkManager linkManager,
                           com.lemonsquad.froggba.cheats.CheatRepository cheatRepo,
+                          com.lemonsquad.froggba.states.SaveStateManager stateManager,
                           OnSettingsChangedListener listener) {
         mContext = context;
         mLinkManager = linkManager;
@@ -68,7 +69,7 @@ public class SettingsDialog {
         mPanels.add(new ControlsPanel());
         mPanels.add(new AudioPanel());
         mPanels.add(new LinkPanel(linkManager));
-        mPanels.add(new SavesPanel());
+        mPanels.add(new SavesPanel(stateManager, cheatRepo != null ? cheatRepo.getActiveRom() : null));
         mPanels.add(new CheatsPanel(cheatRepo));
         mPanels.add(new AboutPanel());
     }

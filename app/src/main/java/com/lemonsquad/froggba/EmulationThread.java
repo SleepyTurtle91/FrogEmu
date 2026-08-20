@@ -8,6 +8,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import com.lemonsquad.froggba.cheats.CheatCommand;
 import com.lemonsquad.froggba.link.LinkManager;
@@ -37,16 +39,45 @@ public class EmulationThread extends Thread {
     // GBA master clock / (228 scanlines × 1232 dots) ≈ 59.7275 Hz
     private static final long FRAME_TIME_NS = 16_742_706L;
 
-    // ── State flags ─────────────────────────────────────────────────
+    // ── State flags & Queues ─────────────────────────────────────────
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final ConcurrentLinkedQueue<CheatCommand> mCheatQueue = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<StateTask> mStateQueue = new ConcurrentLinkedQueue<>();
     private volatile boolean mRunning = true;
     private volatile boolean mPaused  = false;
     private volatile String  mPendingRomPath = null;
     private volatile String  mPendingRomName = null;
 
+    public interface StateCallback {
+        void onComplete(boolean success, String message);
+    }
+
+    private static class StateTask {
+        final boolean isSave;
+        final String path;
+        final StateCallback callback;
+        StateTask(boolean isSave, String path, StateCallback callback) {
+            this.isSave = isSave;
+            this.path = path;
+            this.callback = callback;
+        }
+    }
+
     public void queueCheatCommand(CheatCommand cmd) {
         if (cmd != null) {
             mCheatQueue.offer(cmd);
+        }
+    }
+
+    public void queueSaveState(String path, StateCallback callback) {
+        if (path != null) {
+            mStateQueue.offer(new StateTask(true, path, callback));
+        }
+    }
+
+    public void queueLoadState(String path, StateCallback callback) {
+        if (path != null) {
+            mStateQueue.offer(new StateTask(false, path, callback));
         }
     }
 
@@ -161,6 +192,20 @@ public class EmulationThread extends Thread {
                     case CLEAR_ALL:
                         clearCheatsJNI();
                         break;
+                }
+            }
+
+            // ── 4.6 Drain Pending Save/Load State Tasks ───────────
+            StateTask stateTask;
+            while ((stateTask = mStateQueue.poll()) != null) {
+                boolean ok = stateTask.isSave ? saveStateJNI(stateTask.path) : loadStateJNI(stateTask.path);
+                if (stateTask.callback != null) {
+                    final boolean finalOk = ok;
+                    final StateTask taskRef = stateTask;
+                    mMainHandler.post(() -> taskRef.callback.onComplete(
+                            finalOk,
+                            finalOk ? (taskRef.isSave ? "State saved successfully." : "State loaded successfully.")
+                                    : (taskRef.isSave ? "Failed to save state." : "Failed to load state.")));
                 }
             }
 
@@ -307,4 +352,8 @@ public class EmulationThread extends Thread {
     private native void clearCheatsJNI();
     private native void setCheatEnabledJNI(int index, boolean enabled);
     private native void loadCheatsFromLinesJNI(String[] names, String[][] codeLines, boolean[] enabledFlags);
+
+    // Native Save State JNI
+    private native boolean saveStateJNI(String filePath);
+    private native boolean loadStateJNI(String filePath);
 }

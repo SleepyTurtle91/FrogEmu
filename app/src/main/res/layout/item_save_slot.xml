@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="#15FFFFFF"
+    android:padding="10dp"
+    android:layout_marginBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_slot_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Slot 1"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txt_slot_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Empty Slot"
+            android:textColor="#888888"
+            android:textSize="11sp"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_slot_save"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:text="💾 Save"
+        android:textColor="#00FF66"
+        android:textSize="11sp"
+        android:background="#3300FF66"
+        android:paddingHorizontal="10dp"
+        android:layout_marginEnd="6dp" />
+
+    <Button
+        android:id="@+id/btn_slot_load"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:text="📂 Load"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        android:background="#33FFFFFF"
+        android:paddingHorizontal="10dp"
+        android:layout_marginEnd="6dp" />
+
+    <Button
+        android:id="@+id/btn_slot_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:text="🗑️"
+        android:textColor="#FF4444"
+        android:textSize="11sp"
+        android:background="#33FF4444"
+        android:paddingHorizontal="8dp" />
+
+</LinearLayout>

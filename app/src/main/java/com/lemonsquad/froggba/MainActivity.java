@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     private InputManager       mInputManager;
     private FrogEmuSettings    mSettings;
     private CheatRepository    mCheatRepo;
+    private com.lemonsquad.froggba.states.SaveStateManager mStateManager;
 
     private View    mTouchControls;
     private TextView mTxtRomTitle;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
         // Start the emulation thread (idles until a ROM is loaded)
         mEmuThread = new EmulationThread();
         mCheatRepo = new CheatRepository(this, mEmuThread);
+        mStateManager = new com.lemonsquad.froggba.states.SaveStateManager(this, mEmuThread);
         mEmuThread.setCallback(new EmulationThread.Callback() {
             @Override
             public void onRomLoaded(final ByteBuffer displayBuffer, final String romName) {
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
 
         // Settings ⚙️ button
         findViewById(R.id.btn_settings).setOnClickListener(v -> {
-            new SettingsDialog(this, mEmuThread.getLinkManager(), mCheatRepo, this).show();
+            new SettingsDialog(this, mEmuThread.getLinkManager(), mCheatRepo, mStateManager, this).show();
         });
 
         // Update touch controls based on saved settings and hardware

@@ -25,5 +25,8 @@
 ## 💾 Save States & Snapshots
 
 ### Task: Phase 8 — Save State Slots & Preview Thumbnails
-- **Status**: ⏳ Queued
-- **Objectives**: Instant state serialization/deserialization, slot management, and GL framebuffer thumbnail capture.
+- **Status**: ✅ COMPLETED in v1.4.0
+- **Resolution**:
+  - Implemented `saveStateJNI` and `loadStateJNI` native virtualization hooks on `g_core`.
+  - Built `SaveStateManager` with 5 persistent slots per game (`Slot 0 Quick Save` + `Slots 1..4`).
+  - Added interactive `SavesPanel` UI with timestamps, file size, Save/Load/Delete controls, and instant state restoration.
