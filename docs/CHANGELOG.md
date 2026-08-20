@@ -4,6 +4,24 @@ All notable changes to **FrogEmu** are documented in this file.
 
 ---
 
+## [v1.2.0] — 2026-08-20
+
+### Added
+- **Phase 3: Mature GBA Milestone — Native Cheat Subsystem**:
+  - **Native mGBA Cheat Virtualization**: Native JNI bridge to `struct mCheatDevice` with full support for GameShark Advance, CodeBreaker, Action Replay v3, and VBA/Raw codes.
+  - **Provider-Adapter Architecture**: System-agnostic common model (`CheatItem`, `EmulationSystem`) decoupled from file formats.
+  - **Libretro `.cht` Stream Parser**: High-performance parser reading directly from `InputStream` (supporting compressed APK assets, content URIs, and local storage) with `+` multi-line code expansion.
+  - **5-Tier Fast ROM Matcher**: Cartridge header inspector extracting Game Code (e.g. `BPEE` for Emerald, `BPRE` for FireRed), Version byte, and full-ROM CRC32 with truncated binary guard.
+  - **Master Code Dependency Manager**: Automatic activation of required master codes (`(Must Be On)`) when child cheats are toggled on, and safety lock preventing disabling master codes while dependent cheats remain active.
+  - **Curated Bundled Cheat Databases**: Pre-packaged starter databases in `assets/cheats/gba/` for *Pokémon Emerald*, *Pokémon FireRed*, *Zelda: The Minish Cap*, *Metroid Fusion*, *Metroid Zero Mission*, and *Mario Kart: Super Circuit*.
+  - **Interactive Cheats UI**: Real-time switch list in **Settings ⚙️ → Cheats Engine** with game badges, master code highlights, and "Disable All" button.
+  - **Thread-Safe Command Queue**: Zero-lock `ConcurrentLinkedQueue<CheatCommand>` on `EmulationThread` frame boundary step 4.5.
+- **Unit Test Suite**:
+  - `LibretroChtParserTest` (standard format, comments, out-of-order keys, malformed files).
+  - `RomMatcherTest` (valid GBA header extraction, truncated binary bounds safety).
+
+---
+
 ## [v1.1.0-preview] — 2026-08-20
 
 ### Added

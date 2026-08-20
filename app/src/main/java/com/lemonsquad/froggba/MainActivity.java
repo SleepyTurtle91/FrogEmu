@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import com.lemonsquad.froggba.cheats.CheatRepository;
 import com.lemonsquad.froggba.link.LinkManager;
 import com.lemonsquad.froggba.link.LoopbackTransport;
 import com.lemonsquad.froggba.settings.FrogEmuSettings;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     private EmulationThread    mEmuThread;
     private InputManager       mInputManager;
     private FrogEmuSettings    mSettings;
+    private CheatRepository    mCheatRepo;
 
     private View    mTouchControls;
     private TextView mTxtRomTitle;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
 
         // Start the emulation thread (idles until a ROM is loaded)
         mEmuThread = new EmulationThread();
+        mCheatRepo = new CheatRepository(this, mEmuThread);
         mEmuThread.setCallback(new EmulationThread.Callback() {
             @Override
             public void onRomLoaded(final ByteBuffer displayBuffer, final String romName) {
@@ -114,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
 
         // Settings ⚙️ button
         findViewById(R.id.btn_settings).setOnClickListener(v -> {
-            new SettingsDialog(this, mEmuThread.getLinkManager(), this).show();
+            new SettingsDialog(this, mEmuThread.getLinkManager(), mCheatRepo, this).show();
         });
 
         // Update touch controls based on saved settings and hardware
@@ -208,6 +211,9 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
                 String tempPath = copyUriToInternalStorage(uri, displayName);
                 if (tempPath != null) {
                     mEmuThread.loadRom(tempPath, displayName);
+                    if (mCheatRepo != null) {
+                        mCheatRepo.onRomLoaded(new File(tempPath));
+                    }
                 }
             }
         }

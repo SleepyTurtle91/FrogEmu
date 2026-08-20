@@ -10,12 +10,14 @@
 #include <fcntl.h>
 extern "C" {
 #include <mgba/core/core.h>
+#include <mgba/core/cheats.h>
 #include <mgba-util/vfs.h>
 #include <mgba-util/audio-buffer.h>
 #include <mgba/gba/interface.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/sio.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/cheats.h>
 }
 
 #define LOG_TAG "FrogEmu"
@@ -33,8 +35,8 @@ static uint32_t* g_displayBuffer = nullptr; // GL thread reads   (front)
 static unsigned g_width  = 0;
 static unsigned g_height = 0;
 
-// ── FroggBA Link Adapter Driver ─────────────────────────────────────
-struct FroggBALinkDriver {
+// ── FrogEmu Link Adapter Driver ─────────────────────────────────────
+struct FrogEmuLinkDriver {
     struct GBASIODriver d;
     int deviceId;          // 0 = Master, 1..3 = Slave
     int connectedDevices;  // 1 to 4
@@ -43,19 +45,19 @@ struct FroggBALinkDriver {
     uint16_t pendingOutWord;
 };
 
-static struct FroggBALinkDriver g_linkDriver;
+static struct FrogEmuLinkDriver g_linkDriver;
 
 static bool _froggbaSioInit(struct GBASIODriver* d) {
-    LOGI("FroggBA SIO Driver initialized");
+    LOGI("FrogEmu SIO Driver initialized");
     return true;
 }
 
 static void _froggbaSioDeinit(struct GBASIODriver* d) {
-    LOGI("FroggBA SIO Driver deinitialized");
+    LOGI("FrogEmu SIO Driver deinitialized");
 }
 
 static void _froggbaSioReset(struct GBASIODriver* d) {
-    struct FroggBALinkDriver* driver = (struct FroggBALinkDriver*) d;
+    struct FrogEmuLinkDriver* driver = (struct FrogEmuLinkDriver*) d;
     driver->transferPending = false;
     driver->pendingOutWord = 0xFFFF;
 }
@@ -65,17 +67,17 @@ static bool _froggbaSioHandlesMode(struct GBASIODriver* d, enum GBASIOMode mode)
 }
 
 static int _froggbaSioConnectedDevices(struct GBASIODriver* d) {
-    struct FroggBALinkDriver* driver = (struct FroggBALinkDriver*) d;
+    struct FrogEmuLinkDriver* driver = (struct FrogEmuLinkDriver*) d;
     return driver->isConnected ? driver->connectedDevices : 0;
 }
 
 static int _froggbaSioDeviceId(struct GBASIODriver* d) {
-    struct FroggBALinkDriver* driver = (struct FroggBALinkDriver*) d;
+    struct FrogEmuLinkDriver* driver = (struct FrogEmuLinkDriver*) d;
     return driver->deviceId;
 }
 
 static bool _froggbaSioStart(struct GBASIODriver* d) {
-    struct FroggBALinkDriver* driver = (struct FroggBALinkDriver*) d;
+    struct FrogEmuLinkDriver* driver = (struct FrogEmuLinkDriver*) d;
     if (!driver->isConnected) {
         return true; // Not connected: let core finish locally with disconnected behavior
     }
@@ -110,8 +112,15 @@ static void _initLinkDriver() {
 // ── initCoreJNI ─────────────────────────────────────────────────────
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_lemonsquad_froggba_EmulationThread_initCoreJNI(JNIEnv* env, jobject, jstring path) {
-    // Tear down any previous core
-    if (g_core)          { g_core->deinit(g_core); g_core = nullptr; }
+    // Tear down any previous core and clear cheats
+    if (g_core) {
+        if (g_core->cheatDevice) {
+            struct mCheatDevice* device = g_core->cheatDevice(g_core);
+            if (device) mCheatDeviceClear(device);
+        }
+        g_core->deinit(g_core);
+        g_core = nullptr;
+    }
     if (g_videoBuffer)   { free(g_videoBuffer);    g_videoBuffer = nullptr; }
     if (g_displayBuffer) { free(g_displayBuffer);  g_displayBuffer = nullptr; }
 
@@ -134,7 +143,7 @@ Java_com_lemonsquad_froggba_EmulationThread_initCoreJNI(JNIEnv* env, jobject, js
 
     mCoreInitConfig(g_core, "FrogEmu");
 
-    // Initialize and attach the FroggBA Link Adapter
+    // Initialize and attach the FrogEmu Link Adapter
     _initLinkDriver();
     g_core->setPeripheral(g_core, mPERIPH_GBA_LINK_PORT, &g_linkDriver.d);
 
@@ -162,7 +171,7 @@ Java_com_lemonsquad_froggba_EmulationThread_initCoreJNI(JNIEnv* env, jobject, js
     g_core->setAudioBufferSize(g_core, 8192);
     g_core->reset(g_core);
 
-    LOGI("Emulator ready with Link Adapter attached. Resolution: %ux%u", g_width, g_height);
+    LOGI("Emulator ready with Link Adapter & Cheat Subsystem attached. Resolution: %ux%u", g_width, g_height);
     env->ReleaseStringUTFChars(path, nativePath);
 
     // The GL thread receives a view into the DISPLAY buffer only.
@@ -236,6 +245,83 @@ Java_com_lemonsquad_froggba_EmulationThread_completeLinkTransferJNI(
     g_linkDriver.transferPending = false;
 }
 
+// ── Cheat Subsystem JNI methods (EmulationThread ONLY) ───────────────
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_lemonsquad_froggba_EmulationThread_clearCheatsJNI(JNIEnv*, jobject) {
+    if (!g_core || !g_core->cheatDevice) return;
+    struct mCheatDevice* device = g_core->cheatDevice(g_core);
+    if (device) {
+        mCheatDeviceClear(device);
+        LOGI("All cheats cleared from mCheatDevice.");
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_lemonsquad_froggba_EmulationThread_setCheatEnabledJNI(
+        JNIEnv*, jobject, jint index, jboolean enabled) {
+    if (!g_core || !g_core->cheatDevice) return;
+    struct mCheatDevice* device = g_core->cheatDevice(g_core);
+    if (!device) return;
+
+    if (index >= 0 && (size_t)index < mCheatSetsSize(&device->cheats)) {
+        struct mCheatSet* set = *mCheatSetsGetPointer(&device->cheats, index);
+        if (set) {
+            set->enabled = (bool) enabled;
+            mCheatRefresh(device, set);
+            LOGI("Cheat [%d] '%s' enabled=%d", (int)index, set->name ? set->name : "unnamed", (int)enabled);
+        }
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_lemonsquad_froggba_EmulationThread_loadCheatsFromLinesJNI(
+        JNIEnv* env, jobject,
+        jobjectArray names, jobjectArray codeLineArrays, jbooleanArray enabledFlags) {
+    if (!g_core || !g_core->cheatDevice) return;
+    struct mCheatDevice* device = g_core->cheatDevice(g_core);
+    if (!device) return;
+
+    mCheatDeviceClear(device);
+
+    jsize count = env->GetArrayLength(names);
+    jboolean* flags = env->GetBooleanArrayElements(enabledFlags, nullptr);
+
+    for (jsize i = 0; i < count; ++i) {
+        jstring jName = (jstring) env->GetObjectArrayElement(names, i);
+        const char* nativeName = env->GetStringUTFChars(jName, nullptr);
+
+        struct mCheatSet* set = device->createSet(device, nativeName);
+        env->ReleaseStringUTFChars(jName, nativeName);
+        env->DeleteLocalRef(jName);
+
+        if (!set) continue;
+
+        jobjectArray jLines = (jobjectArray) env->GetObjectArrayElement(codeLineArrays, i);
+        jsize lineCount = env->GetArrayLength(jLines);
+
+        for (jsize j = 0; j < lineCount; ++j) {
+            jstring jLine = (jstring) env->GetObjectArrayElement(jLines, j);
+            const char* nativeLine = env->GetStringUTFChars(jLine, nullptr);
+
+            mCheatAddLine(set, nativeLine, 0); // 0 = autodetect format
+
+            env->ReleaseStringUTFChars(jLine, nativeLine);
+            env->DeleteLocalRef(jLine);
+        }
+        env->DeleteLocalRef(jLines);
+
+        set->enabled = (bool) flags[i];
+        mCheatAddSet(device, set);
+        if (set->enabled) {
+            mCheatRefresh(device, set);
+        }
+    }
+
+    env->ReleaseBooleanArrayElements(enabledFlags, flags, JNI_ABORT);
+    LOGI("Loaded %d cheat sets into mCheatDevice.", (int)count);
+}
+
 // ── getSampleRateJNI ────────────────────────────────────────────────
 extern "C" JNIEXPORT jint JNICALL
 Java_com_lemonsquad_froggba_EmulationThread_getSampleRateJNI(JNIEnv*, jobject) {
@@ -245,7 +331,14 @@ Java_com_lemonsquad_froggba_EmulationThread_getSampleRateJNI(JNIEnv*, jobject) {
 // ── destroyCoreJNI ──────────────────────────────────────────────────
 extern "C" JNIEXPORT void JNICALL
 Java_com_lemonsquad_froggba_EmulationThread_destroyCoreJNI(JNIEnv*, jobject) {
-    if (g_core)          { g_core->deinit(g_core); g_core = nullptr; }
+    if (g_core) {
+        if (g_core->cheatDevice) {
+            struct mCheatDevice* device = g_core->cheatDevice(g_core);
+            if (device) mCheatDeviceClear(device);
+        }
+        g_core->deinit(g_core);
+        g_core = nullptr;
+    }
     if (g_videoBuffer)   { free(g_videoBuffer);    g_videoBuffer = nullptr; }
     if (g_displayBuffer) { free(g_displayBuffer);  g_displayBuffer = nullptr; }
     LOGI("Emulator core destroyed.");

@@ -8,6 +8,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import com.lemonsquad.froggba.cheats.CheatCommand;
 import com.lemonsquad.froggba.link.LinkManager;
 
 /**
@@ -36,10 +38,17 @@ public class EmulationThread extends Thread {
     private static final long FRAME_TIME_NS = 16_742_706L;
 
     // ── State flags ─────────────────────────────────────────────────
+    private final ConcurrentLinkedQueue<CheatCommand> mCheatQueue = new ConcurrentLinkedQueue<>();
     private volatile boolean mRunning = true;
     private volatile boolean mPaused  = false;
     private volatile String  mPendingRomPath = null;
     private volatile String  mPendingRomName = null;
+
+    public void queueCheatCommand(CheatCommand cmd) {
+        if (cmd != null) {
+            mCheatQueue.offer(cmd);
+        }
+    }
 
     // ── Input ───────────────────────────────────────────────────────
     private final AtomicInteger mInputMask = new AtomicInteger(0);
@@ -135,6 +144,24 @@ public class EmulationThread extends Thread {
             short[] resolvedTransfer = mLinkManager.pollResolvedTransfer();
             if (resolvedTransfer != null) {
                 completeLinkTransferJNI(resolvedTransfer);
+            }
+
+            // ── 4.5 Drain Pending Cheat Commands ───────────────────
+            CheatCommand cmd;
+            while ((cmd = mCheatQueue.poll()) != null) {
+                switch (cmd.type) {
+                    case LOAD_ALL:
+                        if (cmd.names != null && cmd.codeLines != null && cmd.enabledFlags != null) {
+                            loadCheatsFromLinesJNI(cmd.names, cmd.codeLines, cmd.enabledFlags);
+                        }
+                        break;
+                    case SET_ENABLED:
+                        setCheatEnabledJNI(cmd.index, cmd.enabled);
+                        break;
+                    case CLEAR_ALL:
+                        clearCheatsJNI();
+                        break;
+                }
             }
 
             // ── 5. Step one frame ───────────────────────────────────
@@ -275,4 +302,9 @@ public class EmulationThread extends Thread {
     private native void setLinkConfigJNI(boolean connected, int deviceId, int numDevices);
     private native int  getLinkPendingOutJNI();
     private native void completeLinkTransferJNI(short[] multiData4);
+
+    // Native Cheat Engine JNI
+    private native void clearCheatsJNI();
+    private native void setCheatEnabledJNI(int index, boolean enabled);
+    private native void loadCheatsFromLinesJNI(String[] names, String[][] codeLines, boolean[] enabledFlags);
 }

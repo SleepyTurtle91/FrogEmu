@@ -4,40 +4,101 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <TextView
+    <!-- Active Game Header Card -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cheats Engine Plugin"
-        android:textColor="#00FF66"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="6dp" />
+        android:orientation="vertical"
+        android:background="#15FFFFFF"
+        android:padding="10dp"
+        android:layout_marginBottom="12dp">
 
-    <TextView
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/txt_cheat_game_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="No ROM Loaded"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txt_cheat_game_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UNKNOWN"
+                android:textColor="#00FF66"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace"
+                android:background="#2200FF66"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txt_cheat_db_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Database: Ready"
+            android:textColor="#888888"
+            android:textSize="11sp"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Controls Row: Actions & Count -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Phase 7 Feature: Libretro/SQLite cheats.db database parser, GameShark/ActionReplay core hook, and per-game cheat selection."
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/txt_cheats_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Available Cheats (0)"
+            android:textColor="#00FF66"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btn_disable_all_cheats"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Disable All"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp"
+            android:background="#33FFFFFF"
+            android:paddingHorizontal="10dp" />
+    </LinearLayout>
+
+    <!-- Empty State Text -->
+    <TextView
+        android:id="@+id/txt_no_cheats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No cheat database found for this ROM.\nYou can place an adjacent &apos;&lt;ROM_Name&gt;.cht&apos; file on storage to load custom cheats."
         android:textColor="#777777"
         android:textSize="12sp"
-        android:layout_marginBottom="12dp" />
+        android:padding="16dp"
+        android:gravity="center"
+        android:visibility="gone" />
 
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
-
-    <TextView
+    <!-- Dynamic Cheats List Container -->
+    <LinearLayout
+        android:id="@+id/layout_cheats_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cheats Database Status"
-        android:textColor="#00FF66"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="6dp" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="cheats.db: Not loaded (Standby for Phase 7)"
-        android:textColor="#AAAAAA"
-        android:fontFamily="monospace"
-        android:textSize="12sp" />
+        android:orientation="vertical" />
 
 </LinearLayout>

@@ -1,0 +1,25 @@
+cheats = 6
+
+cheat0_desc = "Master Code (Must Be On)"
+cheat0_code = "00000000+0002+10001B6A+0007"
+cheat0_enable = false
+
+cheat1_desc = "Infinite Health (Hearts)"
+cheat1_code = "82002AEA+0050"
+cheat1_enable = false
+
+cheat2_desc = "Max Health Capacity (20 Hearts)"
+cheat2_code = "82002AEB+0050"
+cheat2_enable = false
+
+cheat3_desc = "Infinite Rupees (999)"
+cheat3_code = "82002B00+03E7"
+cheat3_enable = false
+
+cheat4_desc = "Infinite Bombs (30)"
+cheat4_code = "82002AEC+001E"
+cheat4_enable = false
+
+cheat5_desc = "Infinite Arrows (99)"
+cheat5_code = "82002AED+0063"
+cheat5_enable = false

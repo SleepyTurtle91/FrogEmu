@@ -1,0 +1,203 @@
+package com.lemonsquad.froggba.cheats;
+
+import android.content.Context;
+import android.content.res.AssetManager;
+import android.util.Log;
+import org.json.JSONObject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import com.lemonsquad.froggba.EmulationThread;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
+
+/**
+ * Manages cheat definitions, per-game persistence, master code dependencies,
+ * and synchronization with EmulationThread.
+ */
+public class CheatRepository {
+
+    private static final String TAG = "FrogEmu_Cheats";
+
+    private final Context mContext;
+    private final EmulationThread mEmuThread;
+    private final FrogEmuSettings mSettings;
+
+    private RomMatcher.RomMetadata mActiveRom = null;
+    private List<CheatItem> mCurrentCheats = new ArrayList<>();
+
+    public CheatRepository(Context context, EmulationThread emuThread) {
+        mContext = context.getApplicationContext();
+        mEmuThread = emuThread;
+        mSettings = FrogEmuSettings.getInstance(context);
+    }
+
+    public synchronized RomMatcher.RomMetadata getActiveRom() {
+        return mActiveRom;
+    }
+
+    public synchronized List<CheatItem> getCurrentCheats() {
+        return Collections.unmodifiableList(mCurrentCheats);
+    }
+
+    /**
+     * Called when a new ROM is loaded. Identifies the game, finds matching .cht,
+     * restores saved toggle states, and dispatches to EmulationThread.
+     */
+    public synchronized void onRomLoaded(File romFile) {
+        mActiveRom = RomMatcher.inspectRom(romFile);
+        Log.i(TAG, "Loaded ROM: " + mActiveRom);
+
+        List<CheatItem> loaded = findAndParseCheats(mActiveRom, romFile);
+        if (loaded.isEmpty()) {
+            mCurrentCheats.clear();
+            mEmuThread.queueCheatCommand(CheatCommand.clearAll());
+            return;
+        }
+
+        // Restore saved toggle states from preferences
+        String saveKey = "cheats_state_" + mActiveRom.gameCode;
+        String savedJson = mSettings.getCustomProfileJson(); // or dedicated storage
+        JSONObject savedStates = null;
+        try {
+            String val = mContext.getSharedPreferences("frogemu_cheats", Context.MODE_PRIVATE)
+                    .getString(saveKey, "{}");
+            savedStates = new JSONObject(val);
+        } catch (Exception ignored) {}
+
+        List<CheatItem> synchronizedList = new ArrayList<>();
+        boolean hasActiveChild = false;
+
+        for (CheatItem item : loaded) {
+            boolean enabled = item.isEnabled();
+            if (savedStates != null && savedStates.has(item.getId())) {
+                enabled = savedStates.optBoolean(item.getId(), false);
+            }
+            if (!item.isMasterCode() && enabled) {
+                hasActiveChild = true;
+            }
+            synchronizedList.add(item.withEnabled(enabled));
+        }
+
+        // Enforce master code dependency: if any child is enabled, master must be on
+        if (hasActiveChild) {
+            for (int i = 0; i < synchronizedList.size(); ++i) {
+                CheatItem item = synchronizedList.get(i);
+                if (item.isMasterCode() && !item.isEnabled()) {
+                    synchronizedList.set(i, item.withEnabled(true));
+                }
+            }
+        }
+
+        mCurrentCheats = synchronizedList;
+        pushAllToEmulationThread();
+    }
+
+    public synchronized void onRomUnloaded() {
+        mActiveRom = null;
+        mCurrentCheats.clear();
+        mEmuThread.queueCheatCommand(CheatCommand.clearAll());
+    }
+
+    /**
+     * Toggle a cheat's enabled status with master code dependency resolution.
+     */
+    public synchronized boolean setCheatEnabled(int index, boolean enabled) {
+        if (index < 0 || index >= mCurrentCheats.size()) return false;
+
+        CheatItem target = mCurrentCheats.get(index);
+
+        // If user tries to turn OFF a Master Code while child cheats are active, prevent it
+        if (target.isMasterCode() && !enabled) {
+            boolean anyChildActive = false;
+            for (CheatItem item : mCurrentCheats) {
+                if (!item.isMasterCode() && item.isEnabled()) {
+                    anyChildActive = true;
+                    break;
+                }
+            }
+            if (anyChildActive) {
+                Log.w(TAG, "Cannot disable Master Code while dependent cheats are active.");
+                return false;
+            }
+        }
+
+        mCurrentCheats.set(index, target.withEnabled(enabled));
+
+        // If turning ON a child cheat, ensure master code is also ON
+        if (!target.isMasterCode() && enabled) {
+            for (int i = 0; i < mCurrentCheats.size(); ++i) {
+                CheatItem item = mCurrentCheats.get(i);
+                if (item.isMasterCode() && !item.isEnabled()) {
+                    mCurrentCheats.set(i, item.withEnabled(true));
+                    mEmuThread.queueCheatCommand(CheatCommand.setEnabled(i, true));
+                }
+            }
+        }
+
+        mEmuThread.queueCheatCommand(CheatCommand.setEnabled(index, enabled));
+        saveCurrentToggleStates();
+        return true;
+    }
+
+    private void pushAllToEmulationThread() {
+        int count = mCurrentCheats.size();
+        String[] names = new String[count];
+        String[][] codeLines = new String[count][];
+        boolean[] enabledFlags = new boolean[count];
+
+        for (int i = 0; i < count; ++i) {
+            CheatItem item = mCurrentCheats.get(i);
+            names[i] = item.getName();
+            codeLines[i] = item.getCodes().toArray(new String[0]);
+            enabledFlags[i] = item.isEnabled();
+        }
+
+        mEmuThread.queueCheatCommand(CheatCommand.loadAll(names, codeLines, enabledFlags));
+    }
+
+    private void saveCurrentToggleStates() {
+        if (mActiveRom == null) return;
+        JSONObject obj = new JSONObject();
+        try {
+            for (CheatItem item : mCurrentCheats) {
+                obj.put(item.getId(), item.isEnabled());
+            }
+            String saveKey = "cheats_state_" + mActiveRom.gameCode;
+            mContext.getSharedPreferences("frogemu_cheats", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString(saveKey, obj.toString())
+                    .apply();
+        } catch (Exception ignored) {}
+    }
+
+    private List<CheatItem> findAndParseCheats(RomMatcher.RomMetadata meta, File romFile) {
+        // 1. Check for adjacent .cht file next to ROM on storage
+        if (romFile != null && romFile.getParent() != null) {
+            String baseName = romFile.getName();
+            int dot = baseName.lastIndexOf('.');
+            String nameNoExt = dot > 0 ? baseName.substring(0, dot) : baseName;
+            File adjacentCht = new File(romFile.getParent(), nameNoExt + ".cht");
+            if (adjacentCht.exists() && adjacentCht.isFile()) {
+                try (InputStream is = new FileInputStream(adjacentCht)) {
+                    List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Local File");
+                    if (!res.isEmpty()) return res;
+                } catch (Exception e) {
+                    Log.w(TAG, "Failed reading adjacent .cht file: " + adjacentCht, e);
+                }
+            }
+        }
+
+        // 2. Check bundled asset database by Game Code (e.g. "BPEE.cht")
+        AssetManager am = mContext.getAssets();
+        String gameCodeAsset = "cheats/gba/" + meta.gameCode.toUpperCase() + ".cht";
+        try (InputStream is = am.open(gameCodeAsset)) {
+            List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Libretro Bundled");
+            if (!res.isEmpty()) return res;
+        } catch (Exception ignored) {}
+
+        return Collections.emptyList();
+    }
+}
