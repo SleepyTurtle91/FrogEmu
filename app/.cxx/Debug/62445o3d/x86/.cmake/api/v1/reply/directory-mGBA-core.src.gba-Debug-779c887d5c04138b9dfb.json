@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "mGBA-core/src/gba",
+		"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/gba"
+	}
+}

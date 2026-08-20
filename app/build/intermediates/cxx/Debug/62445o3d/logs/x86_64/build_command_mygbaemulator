@@ -1,0 +1,4 @@
+/home/user/development/android-sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86_64 \
+  mygbaemulator

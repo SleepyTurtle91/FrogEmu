@@ -1,0 +1,233 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "mGBA-core",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-mGBA-core-Debug-58784a40c2bff8a125a4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "mGBA-core/src/debugger",
+					"jsonFile" : "directory-mGBA-core.src.debugger-Debug-21523f136644dbff603b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/debugger"
+				},
+				{
+					"build" : "mGBA-core/src/feature",
+					"jsonFile" : "directory-mGBA-core.src.feature-Debug-e851541ee31a030e7ac7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/feature"
+				},
+				{
+					"build" : "mGBA-core/src/arm",
+					"jsonFile" : "directory-mGBA-core.src.arm-Debug-a356b40954b35926edeb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/arm"
+				},
+				{
+					"build" : "mGBA-core/src/core",
+					"jsonFile" : "directory-mGBA-core.src.core-Debug-134469cb33e3e76cc2bd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/core"
+				},
+				{
+					"build" : "mGBA-core/src/gb",
+					"jsonFile" : "directory-mGBA-core.src.gb-Debug-126be8f4dba817f9bac8.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/gb"
+				},
+				{
+					"build" : "mGBA-core/src/gba",
+					"jsonFile" : "directory-mGBA-core.src.gba-Debug-779c887d5c04138b9dfb.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/gba"
+				},
+				{
+					"build" : "mGBA-core/src/sm83",
+					"jsonFile" : "directory-mGBA-core.src.sm83-Debug-33c7dd8fb222bd5ed069.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/sm83"
+				},
+				{
+					"build" : "mGBA-core/src/util",
+					"jsonFile" : "directory-mGBA-core.src.util-Debug-bc516a1e82b0c7aba4bd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/util"
+				},
+				{
+					"build" : "mGBA-core/test",
+					"jsonFile" : "directory-mGBA-core.test-Debug-7203ff5e4b5ff486746f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/platform/test"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "mygbaemulator",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10
+					],
+					"name" : "mGBA",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "mgba::@5e58bb50ecea85feb8bf",
+					"jsonFile" : "target-mgba-Debug-f4d27f9874f49b58a1fd.json",
+					"name" : "mgba",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "mgba-version-info::@5e58bb50ecea85feb8bf",
+					"jsonFile" : "target-mgba-version-info-Debug-0f47144bac76c873b269.json",
+					"name" : "mgba-version-info",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "mygbaemulator::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-mygbaemulator-Debug-31c7591835221ff7d8cc.json",
+					"name" : "mygbaemulator",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86_64",
+		"source" : "/workspace/projects/MyGBAEmulator/app/src/main/cpp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

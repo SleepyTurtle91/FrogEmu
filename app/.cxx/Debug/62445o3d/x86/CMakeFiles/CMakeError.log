@@ -1,0 +1,99 @@
+Determining if the function snprintf_l exists failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_ed7b8 && [1/2] Building C object CMakeFiles/cmTC_ed7b8.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_ed7b8
+FAILED: cmTC_ed7b8 
+: && /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -DCHECK_FUNCTION_EXISTS=snprintf_l -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_ed7b8.dir/CheckFunctionExists.c.o -o cmTC_ed7b8  -latomic -lm && :
+ld: error: undefined symbol: snprintf_l
+>>> referenced by CheckFunctionExists.c:17 (/home/user/development/android-sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_ed7b8.dir/CheckFunctionExists.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function popcount32 exists failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_eb018 && [1/2] Building C object CMakeFiles/cmTC_eb018.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_eb018
+FAILED: cmTC_eb018 
+: && /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -DCHECK_FUNCTION_EXISTS=popcount32 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_eb018.dir/CheckFunctionExists.c.o -o cmTC_eb018  -latomic -lm && :
+ld: error: undefined symbol: popcount32
+>>> referenced by CheckFunctionExists.c:17 (/home/user/development/android-sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_eb018.dir/CheckFunctionExists.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function futimes exists failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_d10b3 && [1/2] Building C object CMakeFiles/cmTC_d10b3.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_d10b3
+FAILED: cmTC_d10b3 
+: && /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -DCHECK_FUNCTION_EXISTS=futimes -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_d10b3.dir/CheckFunctionExists.c.o -o cmTC_d10b3  -latomic -lm && :
+ld: error: undefined symbol: futimes
+>>> referenced by CheckFunctionExists.c:17 (/home/user/development/android-sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_d10b3.dir/CheckFunctionExists.c.o:(main)
+>>> did you mean: utimes
+>>> defined in: /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/i686-linux-android/24/libc.so
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if files pthread_np.h exist failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_cce6b && [1/2] Building C object CMakeFiles/cmTC_cce6b.dir/HAVE_PTHREAD_NP_H.c.o
+FAILED: CMakeFiles/cmTC_cce6b.dir/HAVE_PTHREAD_NP_H.c.o 
+/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -pthread  -fPIE -std=c11 -MD -MT CMakeFiles/cmTC_cce6b.dir/HAVE_PTHREAD_NP_H.c.o -MF CMakeFiles/cmTC_cce6b.dir/HAVE_PTHREAD_NP_H.c.o.d -o CMakeFiles/cmTC_cce6b.dir/HAVE_PTHREAD_NP_H.c.o -c /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CheckIncludeFiles/HAVE_PTHREAD_NP_H.c
+/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CheckIncludeFiles/HAVE_PTHREAD_NP_H.c:2:10: fatal error: 'pthread_np.h' file not found
+#include <pthread_np.h>
+         ^~~~~~~~~~~~~~
+1 error generated.
+ninja: build stopped: subcommand failed.
+
+
+Source:
+/* */
+#include <pthread_np.h>
+
+
+int main(void){return 0;}
+
+Determining if the function pthread_set_name_np exists failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_b0005 && [1/2] Building C object CMakeFiles/cmTC_b0005.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_b0005
+FAILED: cmTC_b0005 
+: && /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -pthread -DCHECK_FUNCTION_EXISTS=pthread_set_name_np -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_b0005.dir/CheckFunctionExists.c.o -o cmTC_b0005  -latomic -lm && :
+ld: error: undefined symbol: pthread_set_name_np
+>>> referenced by CheckFunctionExists.c:17 (/home/user/development/android-sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_b0005.dir/CheckFunctionExists.c.o:(main)
+>>> did you mean: pthread_setname_np
+>>> defined in: /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/i686-linux-android/24/libc.so
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+
+Determining if the function crc32 exists failed with the following output:
+Change Dir: /workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/home/user/development/android-sdk/cmake/3.22.1/bin/ninja cmTC_0399a && [1/2] Building C object CMakeFiles/cmTC_0399a.dir/CheckFunctionExists.c.o
+[2/2] Linking C executable cmTC_0399a
+FAILED: cmTC_0399a 
+: && /home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=i686-none-linux-android24 --sysroot=/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Wextra -Wno-missing-field-initializers -Werror=implicit-function-declaration -Werror=implicit-int -fwrapv -pthread -DCHECK_FUNCTION_EXISTS=crc32 -static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--gc-sections -Wl,--no-undefined -Qunused-arguments -Wl,--gc-sections CMakeFiles/cmTC_0399a.dir/CheckFunctionExists.c.o -o cmTC_0399a  -latomic -lm && :
+ld: error: undefined symbol: crc32
+>>> referenced by CheckFunctionExists.c:17 (/home/user/development/android-sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:17)
+>>>               CMakeFiles/cmTC_0399a.dir/CheckFunctionExists.c.o:(main)
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+ninja: build stopped: subcommand failed.
+
+
+

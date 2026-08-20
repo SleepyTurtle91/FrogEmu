@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_activity_main.xml.flat",
+        "source": "com.lemonsquad.froggba.app-main-30:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.lemonsquad.froggba.app-merged_res-28:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.lemonsquad.froggba.app-main-30:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.lemonsquad.froggba.app-merged_res-28:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "com.lemonsquad.froggba.app-main-30:/mipmap-xxhdpi/ic_launcher_round.png"
+    }
+]

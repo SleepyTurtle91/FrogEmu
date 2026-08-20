@@ -1,0 +1,9 @@
+/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/arm64-v8a/mGBA-core/version.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/util/vfs/vfs-mem.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/util/vfs/vfs-fifo.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/util/vfs/vfs-fd.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/platform/posix/memory.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/third-party/inih/ini.c
+/workspace/projects/MyGBAEmulator/mGBA-core/src/util/vfs/vfs-dirent.c
+/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/arm64-v8a/mGBA-core/CMakeFiles/mgba-version-info
+/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/arm64-v8a/mGBA-core/CMakeFiles/mgba-version-info.rule

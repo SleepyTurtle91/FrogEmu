@@ -1,0 +1,61 @@
+{
+  "buildFiles": [
+    "/workspace/projects/MyGBAEmulator/app/src/main/cpp/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/arm/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/core/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/debugger/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/feature/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/gb/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/gba/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/platform/test/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/sm83/CMakeLists.txt",
+    "/workspace/projects/MyGBAEmulator/mGBA-core/src/util/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/user/development/android-sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/user/development/android-sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "mgba::@5e58bb50ecea85feb8bf": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "mgba",
+      "output": "/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86/mGBA-core/libmgba.a"
+    },
+    "mgba-version-info::@5e58bb50ecea85feb8bf": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "mgba-version-info"
+    },
+    "mygbaemulator::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "mygbaemulator",
+      "output": "/workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/x86/libmygbaemulator.so",
+      "runtimeFiles": []
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/home/user/development/android-sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

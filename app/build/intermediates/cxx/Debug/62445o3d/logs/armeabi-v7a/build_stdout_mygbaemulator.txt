@@ -1,0 +1,6 @@
+ninja: Entering directory `/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/armeabi-v7a'
+[1/5] cd /workspace/projects/MyGBAEmulator/mGBA-core && /home/user/development/android-sdk/cmake/3.22.1/bin/cmake -DBINARY_NAME=mgba -DCONFIG_FILE=/workspace/projects/MyGBAEmulator/mGBA-core/src/core/version.c.in -DOUT_FILE=/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/armeabi-v7a/mGBA-core/version.c -P /workspace/projects/MyGBAEmulator/mGBA-core/version.cmake
+[2/5] Building C object mGBA-core/CMakeFiles/mgba.dir/version.c.o
+[3/5] Linking C static library mGBA-core/libmgba.a
+[4/5] Building CXX object CMakeFiles/mygbaemulator.dir/native-lib.cpp.o
+[5/5] Linking CXX shared library /workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/armeabi-v7a/libmygbaemulator.so

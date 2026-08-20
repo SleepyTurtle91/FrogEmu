@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "mGBA-core/src/feature",
+		"source" : "/workspace/projects/MyGBAEmulator/mGBA-core/src/feature"
+	}
+}
