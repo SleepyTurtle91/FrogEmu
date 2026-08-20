@@ -34,6 +34,15 @@ public class MainActivity extends AppCompatActivity {
     private InputManager mInputManager;
     private AudioThread mAudioThread;
     private boolean mIsEmulatorRunning = false;
+    private int mUpscalerState = 0;
+
+    
+    // Lock to prevent concurrent mGBA core access (e.g. runFrame vs readAudio)
+    private final Object mCoreLock = new Object();
+
+    public Object getCoreLock() {
+        return mCoreLock;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +70,22 @@ public class MainActivity extends AppCompatActivity {
         setupButton(R.id.btn_l, InputManager.GBA_KEY_L);
         setupButton(R.id.btn_r, InputManager.GBA_KEY_R);
         
+        
+        Button btnUpscaler = findViewById(R.id.btn_upscaler);
+        btnUpscaler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mUpscalerState = (mUpscalerState + 1) % 2;
+                if (mUpscalerState == 0) {
+                    mRenderer.setUpscaler(EmulatorRenderer.Upscaler.NEAREST);
+                    Log.d("FroggBA_Shader", "Switched to NEAREST");
+                } else {
+                    mRenderer.setUpscaler(EmulatorRenderer.Upscaler.SCALE2X);
+                    Log.d("FroggBA_Shader", "Switched to SCALE2X");
+                }
+            }
+        });
+
         Button btnLoad = findViewById(R.id.btn_load_rom);
         btnLoad.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,7 +134,10 @@ public class MainActivity extends AppCompatActivity {
                 if (tempPath != null) {
                     stopEmulator();
                     
-                    ByteBuffer buffer = initEmulatorJNI(tempPath);
+                    ByteBuffer buffer;
+                    synchronized(mCoreLock) {
+                        buffer = initEmulatorJNI(tempPath);
+                    }
                     if (buffer != null) {
                         mRenderer.setFrameBuffer(buffer);
                         startEmulator();
@@ -146,7 +174,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            int sampleRate = getSampleRateJNI();
+            int sampleRate;
+            synchronized(mCoreLock) {
+                sampleRate = getSampleRateJNI();
+            }
             int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
             
             int bufferSize = Math.max(minBufferSize, sampleRate / 10 * 4); // ~100ms buffer
@@ -161,7 +192,10 @@ public class MainActivity extends AppCompatActivity {
             short[] buffer = new short[capacityFrames * 2]; // 2 channels
             
             while (mRunning) {
-                int framesRead = readAudioJNI(buffer, capacityFrames);
+                int framesRead = 0;
+                synchronized(mCoreLock) {
+                    framesRead = readAudioJNI(buffer, capacityFrames);
+                }
                 if (framesRead > 0) {
                     mAudioTrack.write(buffer, 0, framesRead * 2);
                 } else {

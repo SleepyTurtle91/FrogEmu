@@ -11,6 +11,7 @@ id btn_right
 id btn_select
 id btn_start
 id btn_up
+id btn_upscaler
 id gl_container
 layout activity_main
 mipmap ic_launcher

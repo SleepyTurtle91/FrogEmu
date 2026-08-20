@@ -11,7 +11,19 @@
         android:layout_height="match_parent" />
 
     <!-- Top UI -->
-    <Button
+    <Button 
+        android:id="@+id/btn_upscaler" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Toggle Shader" 
+        android:layout_alignParentTop="true" 
+        android:layout_alignParentRight="true" 
+        android:layout_marginTop="10dp" 
+        android:layout_marginRight="10dp" 
+        android:background="#88000000" 
+        android:textColor="#FFFFFF"/>
+        
+    <Button 
         android:id="@+id/btn_load_rom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

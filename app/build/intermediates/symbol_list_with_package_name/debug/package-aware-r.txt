@@ -3107,6 +3107,7 @@ id btn_right
 id btn_select
 id btn_start
 id btn_up
+id btn_upscaler
 id buttonPanel
 id cache_measures
 id callMeasure

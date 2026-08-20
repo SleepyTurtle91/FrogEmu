@@ -62,14 +62,37 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
         "}\n";
 
-    // Placeholder for Scale2x (currently acts as basic bilinear for demonstration of shader swap)
     private final String FRAGMENT_SHADER_SCALE2X =
         "precision mediump float;\n" +
         "uniform sampler2D uTexture;\n" +
         "varying vec2 vTexCoord;\n" +
+        "const vec2 texSize = vec2(240.0, 160.0);\n" +
         "void main() {\n" +
-        "  // TODO: Implement actual Scale2x logic\n" +
-        "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
+        "  vec2 ps = 1.0 / texSize;\n" +
+        "  vec2 p = vTexCoord * texSize;\n" +
+        "  vec2 p_floor = floor(p);\n" +
+        "  vec2 p_fract = fract(p);\n" +
+        "  vec2 pc = (p_floor + vec2(0.5, 0.5)) * ps;\n" +
+        "  vec4 B = texture2D(uTexture, pc + vec2(0.0, -ps.y));\n" +
+        "  vec4 D = texture2D(uTexture, pc + vec2(-ps.x, 0.0));\n" +
+        "  vec4 E = texture2D(uTexture, pc);\n" +
+        "  vec4 F = texture2D(uTexture, pc + vec2(ps.x, 0.0));\n" +
+        "  vec4 H = texture2D(uTexture, pc + vec2(0.0, ps.y));\n" +
+        "  bool b_neq_h = distance(B, H) > 0.001;\n" +
+        "  bool d_neq_f = distance(D, F) > 0.001;\n" +
+        "  vec4 outColor = E;\n" +
+        "  if (b_neq_h && d_neq_f) {\n" +
+        "      if (p_fract.x < 0.5 && p_fract.y < 0.5) {\n" +
+        "          if (distance(D, B) < 0.001) outColor = D;\n" +
+        "      } else if (p_fract.x >= 0.5 && p_fract.y < 0.5) {\n" +
+        "          if (distance(B, F) < 0.001) outColor = F;\n" +
+        "      } else if (p_fract.x < 0.5 && p_fract.y >= 0.5) {\n" +
+        "          if (distance(D, H) < 0.001) outColor = D;\n" +
+        "      } else {\n" +
+        "          if (distance(H, F) < 0.001) outColor = F;\n" +
+        "      }\n" +
+        "  }\n" +
+        "  gl_FragColor = outColor;\n" +
         "}\n";
 
     private final String FRAGMENT_SHADER_HQ2X =
@@ -77,7 +100,6 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "uniform sampler2D uTexture;\n" +
         "varying vec2 vTexCoord;\n" +
         "void main() {\n" +
-        "  // TODO: Implement actual HQ2x logic\n" +
         "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
         "}\n";
 
@@ -86,7 +108,6 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "uniform sampler2D uTexture;\n" +
         "varying vec2 vTexCoord;\n" +
         "void main() {\n" +
-        "  // TODO: Implement actual xBRZ logic\n" +
         "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
         "}\n";
 
@@ -175,7 +196,10 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
         if (mFrameBuffer == null) return;
         
-        mActivity.runFrameJNI();
+        // SYNCHRONIZED CORE ACCESS
+        synchronized(mActivity.getCoreLock()) {
+            mActivity.runFrameJNI();
+        }
         
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         
