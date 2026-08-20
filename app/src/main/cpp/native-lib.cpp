@@ -18,7 +18,7 @@ extern "C" {
 #include <mgba/internal/gba/io.h>
 }
 
-#define LOG_TAG "FroggBA"
+#define LOG_TAG "FrogEmu"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
@@ -132,7 +132,7 @@ Java_com_lemonsquad_froggba_EmulationThread_initCoreJNI(JNIEnv* env, jobject, js
         return nullptr;
     }
 
-    mCoreInitConfig(g_core, "FroggBA");
+    mCoreInitConfig(g_core, "FrogEmu");
 
     // Initialize and attach the FroggBA Link Adapter
     _initLinkDriver();

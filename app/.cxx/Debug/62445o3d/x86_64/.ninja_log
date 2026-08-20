@@ -214,3 +214,9 @@
 2	116	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86_64/mGBA-core/CMakeFiles/mgba-version-info	99d397def58ec7fb
 116	264	1787232170009784707	CMakeFiles/mygbaemulator.dir/native-lib.cpp.o	35671faa1e11c70d
 264	289	1787232170033784181	/workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/x86_64/libmygbaemulator.so	9cdd64bf60303b27
+1	115	0	mGBA-core/CMakeFiles/mgba-version-info	99d397def58ec7fb
+1	115	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86_64/mGBA-core/CMakeFiles/mgba-version-info	99d397def58ec7fb
+1	108	0	mGBA-core/CMakeFiles/mgba-version-info	99d397def58ec7fb
+1	108	0	/workspace/projects/MyGBAEmulator/app/.cxx/Debug/62445o3d/x86_64/mGBA-core/CMakeFiles/mgba-version-info	99d397def58ec7fb
+108	265	1787233035098931726	CMakeFiles/mygbaemulator.dir/native-lib.cpp.o	35671faa1e11c70d
+265	288	1787233035121931255	/workspace/projects/MyGBAEmulator/app/build/intermediates/cxx/Debug/62445o3d/obj/x86_64/libmygbaemulator.so	9cdd64bf60303b27

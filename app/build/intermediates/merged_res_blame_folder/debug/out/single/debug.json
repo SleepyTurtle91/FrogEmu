@@ -1,15 +1,19 @@
 [
     {
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_link.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_link.xml"
+    },
+    {
         "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_dialog_settings.xml.flat",
         "source": "com.lemonsquad.froggba.app-main-30:/layout/dialog_settings.xml"
     },
     {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_display.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_display.xml"
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_cheats.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_cheats.xml"
     },
     {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_controls.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_controls.xml"
+        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_activity_main.xml.flat",
+        "source": "com.lemonsquad.froggba.app-main-30:/layout/activity_main.xml"
     },
     {
         "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/mipmap-xxhdpi_ic_launcher_round.png.flat",
@@ -20,28 +24,32 @@
         "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_about.xml"
     },
     {
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_about.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_about.xml"
+    },
+    {
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_audio.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_audio.xml"
+    },
+    {
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_controls.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_controls.xml"
+    },
+    {
         "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_activity_main.xml.flat",
         "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/activity_main.xml"
     },
     {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_cheats.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_cheats.xml"
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_saves.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_saves.xml"
+    },
+    {
+        "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_display.xml.flat",
+        "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/panel_settings_display.xml"
     },
     {
         "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/layout_dialog_settings.xml.flat",
         "source": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-main-30:/layout/dialog_settings.xml"
-    },
-    {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_audio.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_audio.xml"
-    },
-    {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_link.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_link.xml"
-    },
-    {
-        "merged": "com.lemonsquad.froggba.app-merged_res-28:/layout_panel_settings_saves.xml.flat",
-        "source": "com.lemonsquad.froggba.app-main-30:/layout/panel_settings_saves.xml"
     },
     {
         "merged": "/home/user/.gradle/daemon/8.3/com.lemonsquad.froggba.app-merged_res-28:/mipmap-xxhdpi_ic_launcher.png.flat",

@@ -7,7 +7,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🐸 FroggBA Handheld Emulator"
+        android:text="🐸 FrogEmu Handheld Emulator"
         android:textColor="#00FF66"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -16,12 +16,12 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Version 1.0 • Built for Anbernic RG556 Handheld Console\nDeveloped by LemonSquad • All Rights Reserved"
+        android:text="Version 1.0 • Built for Anbernic RG556 Handheld Console\nDeveloped by LemonSquad • GitHub: SleepyTurtle91/FrogEmu"
         android:textColor="#CCCCCC"
         android:textSize="12sp"
         android:layout_marginBottom="12dp" />
 
-    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="8dp" />
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="6dp" />
 
     <TextView
         android:layout_width="match_parent"
@@ -35,8 +35,36 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="mGBA Core Engine v0.11-dev (Mozilla Public License 2.0)\nHigh-accuracy cycle-accurate ARM7TDMI &amp; GBA SIO emulation."
-        android:textColor="#888888"
-        android:textSize="12sp" />
+        android:text="GBA Core: mGBA Engine v0.11-dev (Mozilla Public License 2.0)\nCopyright (c) 2013-2024 Jeffrey Pfau and contributors.\nHigh-accuracy cycle-accurate ARM7TDMI &amp; GBA SIO emulation."
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        android:layout_marginBottom="12dp" />
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#22FFFFFF" android:layout_marginVertical="6dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open Source Licenses &amp; Third-Party Notices"
+        android:textColor="#00FF66"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#22000000"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="• mGBA Core: Mozilla Public License 2.0 (MPL-2.0)\n• AndroidX &amp; Material Components: Apache License 2.0\n• zlib / libpng / lzma: zlib / libpng / BSD Licenses"
+            android:textColor="#888888"
+            android:fontFamily="monospace"
+            android:textSize="11sp" />
+    </LinearLayout>
 
 </LinearLayout>

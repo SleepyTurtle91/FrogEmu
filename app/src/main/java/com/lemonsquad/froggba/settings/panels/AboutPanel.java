@@ -15,7 +15,7 @@ public class AboutPanel implements SettingsPanel {
     public String getId() { return "about"; }
 
     @Override
-    public String getTitle() { return "About FroggBA"; }
+    public String getTitle() { return "About FrogEmu"; }
 
     @Override
     public String getIcon() { return "ℹ️"; }
