@@ -1,41 +1,93 @@
 # 🧪 FrogEmu Cheat Engine Architecture
 
-## 1. Overview
-This document outlines the architecture for FrogEmu's Cheat Subsystem, connecting Libretro `.cht` databases to mGBA's native `struct mCheatDevice` hardware virtualization engine.
+## 1. Executive Summary & Design Principle
+The FrogEmu Cheat Subsystem connects external cheat databases (such as Libretro `.cht` repositories) to mGBA's native hardware virtualization engine (`struct mCheatDevice`) without making the database part of the emulator core.
+
+> **Design Principle**: The **`CheatProvider` supplies cheats**; the **native adapter executes them**.
 
 ---
 
-## 2. Decoupled 3-Layer System
+## 2. Decoupled Provider-Adapter Model
 
 ```text
 ┌────────────────────────────────────────────────────────┐
 │                   FrogEmu Settings UI                  │
 │   - Cheats sub-panel (List cheats, Enable/Disable)     │
-│   - Add Custom Cheat (GameShark, CodeBreaker, Raw)     │
-│   - Database status & active game matching info        │
+│   - Custom cheat creator (CodeBreaker, GameShark, Raw) │
+│   - Active game matching badge & DB status             │
 └───────────────────────────┬────────────────────────────┘
                             │ (Java CheatItem list)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │                    CheatRepository                     │
 │   - 5-Tier ROM Matcher (CRC32 → GameCode → Title)      │
-│   - Libretro .cht Parser (splits '+' multi-line codes) │
-│   - Per-Game Persistent State (.json / Preferences)    │
-└───────────────────────────┬────────────────────────────┘
-                            │ (Synchronized on EmulationThread)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│             EmulationThread & Native mGBA              │
-│   - g_core->cheatDevice(g_core)                        │
-│   - GBACheatSet & GBACheatHook execution               │
-│   - Automated Master Code / IRQ Hook injection         │
-│   - Frame-boundary Raw memory writes                   │
-└───────────────────────────┘
+│   - Manages active system CheatProvider                │
+│   - Per-game persistent toggle state (.json)           │
+└─────────────┬────────────────────────────┬─────────────┘
+              │                            │
+              ▼                            ▼
+┌───────────────────────────┐    ┌───────────────────────────┐
+│       CheatProvider       │    │     mGBA Cheat Adapter    │
+│  - LibretroFileProvider   │    │  - Transforms CheatItems  │
+│  - LocalCustomProvider    │    │    into mGBA lines        │
+│  - UserEnteredProvider    │    │  - Pushes to JNI bridge   │
+│  - FutureOnlineProvider   │    └─────────────┬─────────────┘
+└───────────────────────────┘                  │
+                                               ▼
+                                 ┌───────────────────────────┐
+                                 │      EmulationThread      │
+                                 │   - g_core->cheatDevice   │
+                                 │   - GBACheatHook triggers │
+                                 │   - Frame-boundary writes │
+                                 └───────────────────────────┘
 ```
 
 ---
 
-## 3. Supported Formats & Protocols
+## 3. Directory Structure
+
+```text
+FrogEmu/
+├── app/
+│   └── src/main/java/com/lemonsquad/froggba/cheats/
+│       ├── CheatEngine.java
+│       ├── CheatRepository.java
+│       ├── CheatItem.java
+│       ├── CheatProvider.java
+│       ├── LibretroChtParser.java
+│       └── RomChecksumMatcher.java
+│
+├── cheats/
+│   ├── gba/
+│   ├── gb/
+│   ├── gbc/
+│   ├── ps1/
+│   └── psp/
+│
+└── docs/
+    └── cheats/
+        └── CHEAT_ARCHITECTURE.md
+```
+
+---
+
+## 4. Architectural Classification in FrogEmu
+
+| Component | FrogEmu Architectural Tier |
+| :--- | :--- |
+| **mGBA Core Engine** | **Core** |
+| **RG556 Controller & Remapping** | **Core Subsystem** |
+| **Audio PCM Streaming Pipeline** | **Core Subsystem** |
+| **Link Multiplayer** | **On-Demand Socket Subsystem** *(Zero overhead when OFF)* |
+| **Settings Control Plane** | **Core Control Plane** |
+| **Display Filters (Nearest / Scale2x / CRT)** | **Pluggable Enhancement** |
+| **Cheat Engine (Provider-Adapter)** | **Pluggable Feature** |
+| **Save States & Thumbnails** | **Pluggable Feature** |
+| **Future Multi-System Cores (GB, GBC, PS1, PSP)**| **Additional Multi-System Cores** |
+
+---
+
+## 5. Supported Cheat Protocols (mGBA Core)
 
 1. **CodeBreaker / GameShark SP**: 12 hex digits (`XXXXXXXX YYYY`), dynamic PRNG tables, master codes, slide/fill, and button jokers.
 2. **GameShark Advance / Action Replay v1/v2**: 16 hex digits (`XXXXXXXX YYYYYYYY`), seed encryption, ARM/Thumb opcode interception (`GBACheatHook`).
@@ -44,7 +96,7 @@ This document outlines the architecture for FrogEmu's Cheat Subsystem, connectin
 
 ---
 
-## 4. 5-Tier ROM Matching Cascade
+## 6. 5-Tier ROM Matching Cascade
 
 1. **Tier 1: Full-ROM CRC32 / SHA-1** (Matches exact revision / hack)
 2. **Tier 2: 4-Character Game Code + Version Byte** (e.g. `BPEE` + `0x01` for Emerald v1.1)
@@ -54,7 +106,7 @@ This document outlines the architecture for FrogEmu's Cheat Subsystem, connectin
 
 ---
 
-## 5. Invariants & Thread Safety
+## 7. Invariants & Thread Safety
 
 - **Sole Core Owner**: All `mCheatDevice` calls occur strictly on `EmulationThread`.
 - **Zero Overhead when OFF**: No hooks installed when cheat list is disabled.
