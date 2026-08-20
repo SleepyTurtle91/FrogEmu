@@ -2,11 +2,12 @@ package com.lemonsquad.froggba;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.opengl.GLSurfaceView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,26 +15,37 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("mygbaemulator");
     }
 
+    private GLSurfaceView mGLView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         
-        TextView tv = findViewById(R.id.sample_text);
+        mGLView = new GLSurfaceView(this);
+        mGLView.setEGLContextClientVersion(2);
+        EmulatorRenderer renderer = new EmulatorRenderer(this);
+        mGLView.setRenderer(renderer);
+        setContentView(mGLView);
         
-        // 1. Initialize core
-        String initResult = stringFromJNI();
-        
-        // 2. Extract test ROM from assets
         String romPath = extractAsset("test.gba");
-        
-        // 3. Load ROM
-        boolean loaded = false;
         if (romPath != null) {
-            loaded = loadRomJNI(romPath);
+            ByteBuffer buffer = initEmulatorJNI(romPath);
+            if (buffer != null) {
+                renderer.setFrameBuffer(buffer);
+            }
         }
-        
-        tv.setText(initResult + "\nROM Loaded: " + loaded);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mGLView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGLView.onResume();
     }
 
     private String extractAsset(String assetName) {
@@ -54,6 +66,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public native String stringFromJNI();
-    public native boolean loadRomJNI(String path);
+    public native ByteBuffer initEmulatorJNI(String path);
+    public native void runFrameJNI();
 }

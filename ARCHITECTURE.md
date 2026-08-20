@@ -1,5 +1,9 @@
 # FroggBA Architecture Document
 
+## 0. Build Invariants
+> **CRITICAL RULE**: The JNI wrapper (`native-lib.cpp`) and the `libmgba` static/shared library MUST be compiled with the exact same mGBA configuration and compile definitions (e.g., `M_CORE_GBA`, `ENABLE_VFS`). 
+Failure to do so causes a C/C++ ABI mismatch where `sizeof(struct mCore)` differs between the wrapper and the library, resulting in memory corruption and immediate `SEGV_MAPERR` crashes when executing function pointers like `core->init()`.
+
 ## 1. Emulator Initialization
 We will initialize the mGBA core using the headless frontend approach:
 ```c
@@ -51,12 +55,25 @@ For now, we assume `cheats.db` implies a bundled file we will extract from `asse
 
 ## 7. Execution Workflow Milestones
 To maintain stability, FroggBA will be implemented in the following phases:
-1. **Core alive**: Minimal native build + JNI smoke test.
-2. **ROM loaded**: Connect VFS to a local ROM on the device.
-3. **Frame executed & picture displayed**: Hook up the 240x160 framebuffer.
-4. **Audio**: Stream `mAudioBuffer` to `AudioTrack`.
-5. **Controls**: Hook up touch buttons to `setKeys()`.
-6. **Enhancements**: Add the GLSL upscaler and Cheat support.
+
+| Milestone           | Status                     |
+| ------------------- | -------------------------- |
+| Project / package   | ✅ `com.lemonsquad.froggba` |
+| mGBA integration    | ✅                          |
+| CMake + NDK         | ✅                          |
+| JNI ABI alignment   | ✅                          |
+| Core initialization | ✅                          |
+| ROM loading         | ✅ **Milestone 2**          |
+| Frame execution     | 🔜                         |
+| First framebuffer   | 🔜                         |
+| Android display     | 🔜                         |
+| Audio               | ⏳                          |
+| Input               | ⏳                          |
+| Wi-Fi Link          | 🔬 Research                |
+| Bluetooth Link      | 🔬 Research                |
+| GLSL upscaler       | ⏳                          |
+| Cheats              | ⏳                          |
+| Launcher icon       | ✅ Integrated               |
 
 ## 8. Multiplayer (Local Link Cable)
 FroggBA will implement a deterministic Link Cable networking layer for local offline multiplayer:
