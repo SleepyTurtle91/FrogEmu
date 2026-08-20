@@ -18,36 +18,40 @@ Failure to do so causes a C/C++ ABI mismatch where `sizeof(struct mCore)` differ
 ## 1. Concurrency & Control Plane Model
 
 ```text
-┌────────────────────────────────────────────────────────┐
-│                   Android UI Thread                    │
-│   - Game View (Clean, Immersive 3:2 Display)           │
-│   - Settings ⚙️ Control Plane (FroggBASettings)         │
-│   - ROM Picker & File Management                       │
-└───────────────────────────┬────────────────────────────┘
-                            │ (Atomic / Preferences)
-                            ▼
-┌────────────────────────────────────────────────────────┐
-│                    EmulationThread                     │
-│   - Sole Owner of mCore lifecycle                      │
-│   - Independent Clock Timing (~59.7275 Hz)             │
-│   - Polls Input Bitmask                                │
-│   - Executes stepFrameJNI()                            │
-│   - Publishes Display Framebuffer (memcpy back→front)  │
-│   - Pushes Audio Chunks to Queue                       │
-│   - Handles SIO Transfer Injections                    │
-└───────┬───────────────────┬────────────────────┬───────┘
-        │                   │                    │
- (Display Front-Buffer) (Audio Queue)   (Link Payload Hand-off)
-        ▼                   ▼                    ▼
-┌──────────────┐    ┌──────────────┐     ┌──────────────┐
-│  GL Thread   │    │ AudioThread  │     │ LinkManager  │
-│  - Render    │    │ - AudioTrack │     │ - Session    │
-│  - Shader    │    │ - 32.7 kHz   │     │ - Transports │
-└──────────────┘    └──────────────┘     └──────┬───────┘
-                                                │
-                                  ┌─────────────┴─────────────┐
-                                  ▼                           ▼
-                           LoopbackTransport            WifiTransport (LAN)
+                         ┌──────────────────────┐
+                         │      FroggBA UI      │
+                         │                      │
+                         │  Gameplay   Settings │
+                         └──────┬────────┬──────┘
+                                │        │
+                                │        ▼
+                                │   Settings Control
+                                │       Plane
+                                │        │
+                                ▼        ▼
+                         ┌──────────────────────┐
+                         │   FroggBA Plugin API │
+                         ├──────────────────────┤
+                         │ Display              │
+                         │ Input                │
+                         │ Audio                │
+                         │ Link Transport       │
+                         │ Cheats               │
+                         │ Future extensions    │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   EmulationThread    │
+                         │                      │
+                         │ Sole mCore owner     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                              ┌───────────┐
+                              │   mGBA    │
+                              │   Core    │
+                              └───────────┘
 ```
 
 ---
@@ -89,23 +93,31 @@ FroggBA separates feature implementations into modular plugins managed via the S
 
 ---
 
-## 6. Execution Workflow Milestones
+## 6. Execution Workflow Milestones & 10-Phase Roadmap
 
-| Area                     | Status | Description |
-| ------------------------ | -----: | :---------- |
-| mGBA Core Integration    |      ✅ | Headless mGBA running via Android NDK |
-| JNI ABI Alignment        |      ✅ | Synchronized CMake flags across wrapper & core |
-| Concurrency Refactor     |      ✅ | Dedicated `EmulationThread` core ownership |
-| Frame Timing (~59.73 Hz) |      ✅ | Decoupled from display refresh rate |
-| GLES Double Buffering    |      ✅ | Safe frame publication contract |
-| RG556 Gamepad Auto-Hide  |      ✅ | Touch controls hidden on gamepad detection |
-| Scale2x Upscaler Shader  |      ✅ | High-performance retro edge scaling |
-| Real-Game Validation     |      ✅ | Proven on commercial ROMs on RG556 |
-| FroggBA Settings v1      |      ✅ | Persistent preferences & clean gameplay toolbar |
-| Native SIO Link Adapter  |      ✅ | `GBASIODriver` hooked to `mPERIPH_GBA_LINK_PORT` |
-| Loopback Transport & Diag|      ✅ | 2-4 player in-process testing & live diagnostics |
-| **Real SIO Validation**  |     🔜 | Validate handshake transactions in real games |
-| **Wi-Fi LAN Multiplayer**|     🔬 | Socket UDP/TCP local transport without internet |
-| **Cheats Database**      |     🔬 | Schema investigation and cheat engine hook |
-| Save States              |      ⏳ | Memory snapshots and serialization |
-| ROM Library & Box Art    |      ⏳ | Scanning, cover art, and metadata |
+### Foundation Phase (Completed)
+- [x] **mGBA Core Integration & ABI Invariant**
+- [x] **Concurrency Refactor (`EmulationThread` Core Ownership)**
+- [x] **Double-Buffered Frame Publication Contract**
+- [x] **Frame Timing Clock (~59.73 Hz)**
+- [x] **Audio Streaming Pipeline (32.7 kHz 16-bit PCM)**
+- [x] **Real-Game Stability on Anbernic RG556**
+- [x] **Native SIO Link Adapter (`GBASIODriver`) & Loopback Transport**
+- [x] **FroggBA Settings v1 (Persistent Preferences & Clean Gameplay UI)**
+
+---
+
+### Plugin Expansion Phase (Roadmap)
+
+| Phase | Milestone | Status | Description |
+| :---: | :-------- | :----: | :---------- |
+| **1** | **Settings Architecture Hardening** | 🔜 | Extensible modular category sub-panels |
+| **2** | **RG556 Controller Custom Mapping** | ⏳ | Custom button remapping & stick sensitivity |
+| **3** | **Display Filter Framework** | ⏳ | Scanline, CRT, LCD Grid, HQ2x, xBRZ filters |
+| **4** | **Real-Game SIO Handshake Validation** | ⏳ | Log & verify actual GBA link protocol handshakes |
+| **5** | **Wi-Fi LAN Transport** | ⏳ | Zero-config local socket multiplayer (Hotspot/LAN) |
+| **6** | **Bluetooth Transport** | ⏳ | RFCOMM/L2CAP direct pairing multiplayer |
+| **7** | **Cheat Plugin & `cheats.db`** | ⏳ | Libretro/SQLite cheat repository & mGBA cheat device |
+| **8** | **Save-State Plugin** | ⏳ | Instant state snapshots, slots, and preview thumbnails |
+| **9** | **ROM Library & Box Art** | ⏳ | Multi-directory scanner, cover art, and metadata |
+| **10**| **Plugin Discovery & Management** | ⏳ | Dynamic extension loading & settings registration |
