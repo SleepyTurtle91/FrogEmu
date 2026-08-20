@@ -13,45 +13,46 @@ Failure to do so causes a C/C++ ABI mismatch where `sizeof(struct mCore)` differ
 > - **Audio**: `EmulationThread` drains audio frames from mGBA into a thread-safe `ArrayBlockingQueue<short[]>`, which the dedicated `AudioThread` consumes without locking the core or the renderer.
 > - **Link SIO**: Native `GBASIODriver` intercepts GBA serial transfers. Transfer completion (`GBASIOMultiplayerFinishTransfer()`) is invoked exclusively on `EmulationThread`.
 
+### Invariant 3: On-Demand Link Networking Contract
+> **CRITICAL RULE**: Link networking is a built-in on-demand subsystem. No network or Bluetooth socket may be created, retained, or polled while Link Multiplayer is disabled.
+> When Link is `OFF`, all transports are stopped, sockets closed, and background threads terminated. FroggBA operates as a zero-overhead single-player emulator with zero network CPU/battery consumption.
+
 ---
 
 ## 1. Concurrency & Control Plane Model
 
 ```text
-                         ┌──────────────────────┐
-                         │      FroggBA UI      │
-                         │                      │
-                         │  Gameplay   Settings │
-                         └──────┬────────┬──────┘
-                                │        │
-                                │        ▼
-                                │   Settings Control
-                                │       Plane
-                                │        │
-                                ▼        ▼
-                         ┌──────────────────────┐
-                         │   FroggBA Plugin API │
-                         ├──────────────────────┤
-                         │ Display              │
-                         │ Input                │
-                         │ Audio                │
-                         │ Link Transport       │
-                         │ Cheats               │
-                         │ Future extensions    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │   EmulationThread    │
-                         │                      │
-                         │ Sole mCore owner     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                              ┌───────────┐
-                              │   mGBA    │
-                              │   Core    │
-                              └───────────┘
+┌────────────────────────────────────────────────────────┐
+│                   Android UI Thread                    │
+│   - Game View (Clean, Immersive 3:2 Display)           │
+│   - Settings ⚙️ Control Plane (FroggBASettings)         │
+│   - ROM Picker & File Management                       │
+└───────────────────────────┬────────────────────────────┘
+                            │ (Atomic / Preferences)
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                    EmulationThread                     │
+│   - Sole Owner of mCore lifecycle                      │
+│   - Independent Clock Timing (~59.7275 Hz)             │
+│   - Polls Input Bitmask                                │
+│   - Executes stepFrameJNI()                            │
+│   - Publishes Display Framebuffer (memcpy back→front)  │
+│   - Pushes Audio Chunks to Queue                       │
+│   - Mediates SIO Transfer Injections                   │
+└───────┬───────────────────┬────────────────────┬───────┘
+        │                   │                    │
+ (Display Front-Buffer) (Audio Queue)   (Link SIO Hand-off)
+        ▼                   ▼                    ▼
+┌──────────────┐    ┌──────────────┐     ┌──────────────┐
+│  GL Thread   │    │ AudioThread  │     │ LinkManager  │
+│  - Render    │    │ - AudioTrack │     │ (On-Demand)  │
+│  - Shaders   │    │ - 32.7 kHz   │     └──────┬───────┘
+└──────────────┘    └──────────────┘            │
+                                         ┌──────┴──────┐
+                                         ▼             ▼
+                                     Wi-Fi LAN     Bluetooth
+                                     (Sockets      (RFCOMM
+                                      when ON)     when ON)
 ```
 
 ---
@@ -62,7 +63,7 @@ Failure to do so causes a C/C++ ABI mismatch where `sizeof(struct mCore)` differ
 - **Modular Upscaler Architecture**:
   - `Nearest`: Reference / diagnostic baseline (pixel-perfect 1:1).
   - `Scale2x`: Edge-detection sub-pixel interpolation shader.
-  - `HQ2x` / `xBRZ`: Future visual enhancement plugins.
+  - `HQ2x` / `xBRZ`: Future visual enhancement filters.
   - *Invariant*: Shader compilation failures gracefully fall back to `Nearest` without crashing.
 
 ---
@@ -82,12 +83,19 @@ Failure to do so causes a C/C++ ABI mismatch where `sizeof(struct mCore)` differ
 
 ---
 
-## 5. Plugin Architecture
-FroggBA separates feature implementations into modular plugins managed via the Settings Control Plane:
-- **Display Plugins** (`DisplayProvider`): `NearestFilter`, `Scale2xFilter`, `HQ2xFilter`, `XbrzFilter`.
-- **Link Transports** (`LinkTransport`): `LoopbackTransport`, `WifiTransport` (LAN/Hotspot), `BluetoothTransport`.
-- **Input Providers** (`InputProvider`): `AndroidGamepad`, `TouchInput`.
-- **Cheat Providers** (`CheatProvider`): `CheatsDatabase` (SQLite/Libretro parser).
+## 5. Built-in Subsystems vs. Modular Plugins
+
+### Built-in Subsystems
+- **Link Multiplayer Subsystem**: On-demand socket engine with built-in transports:
+  - `LoopbackTransport`: In-process testing & virtual slave validation.
+  - `WifiLanTransport`: Local Wi-Fi router / Android Hotspot broadcast.
+  - `WifiHotspotTransport`: Direct peer-to-peer Wi-Fi hotspot mode.
+  - `BluetoothTransport`: RFCOMM / L2CAP direct pairing.
+
+### Modular Plugin Framework
+- **Display Plugins** (`DisplayProvider`): `NearestFilter`, `Scale2xFilter`, `ScanlineFilter`, `CrtFilter`, `Hq2xFilter`, `XbrzFilter`.
+- **Input Plugins** (`InputProvider`): `GamepadMappingProvider`, `TouchOverlayProvider`.
+- **Cheat Plugins** (`CheatProvider`): `CheatsDatabase` (SQLite/Libretro parser).
 
 *Invariant*: Plugins communicate strictly through FroggBA Java interfaces and never touch `mCore` directly.
 
@@ -107,17 +115,17 @@ FroggBA separates feature implementations into modular plugins managed via the S
 
 ---
 
-### Plugin Expansion Phase (Roadmap)
+### Expansion Phase (Roadmap)
 
 | Phase | Milestone | Status | Description |
 | :---: | :-------- | :----: | :---------- |
 | **1** | **Settings Architecture Hardening** | 🔜 | Extensible modular category sub-panels |
-| **2** | **RG556 Controller Custom Mapping** | ⏳ | Custom button remapping & stick sensitivity |
-| **3** | **Display Filter Framework** | ⏳ | Scanline, CRT, LCD Grid, HQ2x, xBRZ filters |
-| **4** | **Real-Game SIO Handshake Validation** | ⏳ | Log & verify actual GBA link protocol handshakes |
-| **5** | **Wi-Fi LAN Transport** | ⏳ | Zero-config local socket multiplayer (Hotspot/LAN) |
-| **6** | **Bluetooth Transport** | ⏳ | RFCOMM/L2CAP direct pairing multiplayer |
-| **7** | **Cheat Plugin & `cheats.db`** | ⏳ | Libretro/SQLite cheat repository & mGBA cheat device |
-| **8** | **Save-State Plugin** | ⏳ | Instant state snapshots, slots, and preview thumbnails |
-| **9** | **ROM Library & Box Art** | ⏳ | Multi-directory scanner, cover art, and metadata |
+| **2** | **RG556 Controller Custom Mapping** | ⏳ | Custom button remapping & stick deadzones |
+| **3** | **Display Filter Framework** | ⏳ | Scanline, CRT, LCD Grid, HQ2x, xBRZ shaders |
+| **4** | **Real-Game SIO Handshake Validation** | ⏳ | Transaction logging & protocol verification |
+| **5** | **Wi-Fi LAN / Hotspot Transport** | ⏳ | Zero-config on-demand socket multiplayer |
+| **6** | **Bluetooth Transport** | ⏳ | On-demand RFCOMM socket pairing |
+| **7** | **Cheat Plugin & `cheats.db`** | ⏳ | Libretro/SQLite cheat repository & mGBA hook |
+| **8** | **Save-State Plugin** | ⏳ | Instant state snapshots, slots, and thumbnails |
+| **9** | **ROM Library & Box Art** | ⏳ | Multi-directory scanner, cover art, metadata |
 | **10**| **Plugin Discovery & Management** | ⏳ | Dynamic extension loading & settings registration |
