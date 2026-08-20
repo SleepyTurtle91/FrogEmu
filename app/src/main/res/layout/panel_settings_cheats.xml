@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:background="#15FFFFFF"
         android:padding="10dp"
-        android:layout_marginBottom="12dp">
+        android:layout_marginBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -53,6 +53,86 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
+    <!-- Libretro Cheats DB Downloader Card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1000FF66"
+        android:padding="10dp"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txt_downloader_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Online Cheats DB (Libretro)"
+                    android:textColor="#00FF66"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txt_downloader_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Downloaded: 0 files"
+                    android:textColor="#AAAAAA"
+                    android:textSize="11sp"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_download_cheats_db"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="📥 Download DB"
+                android:textColor="#00FF66"
+                android:textSize="11sp"
+                android:background="#3300FF66"
+                android:paddingHorizontal="12dp" />
+        </LinearLayout>
+
+        <!-- Progress Container (Hidden by default) -->
+        <LinearLayout
+            android:id="@+id/layout_download_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="8dp">
+
+            <ProgressBar
+                android:id="@+id/progress_download_cheats"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:max="100"
+                android:progress="0"
+                android:progressTint="#00FF66" />
+
+            <TextView
+                android:id="@+id/txt_download_progress_msg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Connecting..."
+                android:textColor="#00FF66"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
     <!-- Controls Row: Actions & Count -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -87,7 +167,7 @@
         android:id="@+id/txt_no_cheats"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No cheat database found for this ROM.\nYou can place an adjacent &apos;&lt;ROM_Name&gt;.cht&apos; file on storage to load custom cheats."
+        android:text="No cheat database found for this ROM.\nTap 'Download DB' above or place an adjacent &apos;&lt;ROM_Name&gt;.cht&apos; file on storage."
         android:textColor="#777777"
         android:textSize="12sp"
         android:padding="16dp"

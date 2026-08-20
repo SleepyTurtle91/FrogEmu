@@ -10,12 +10,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import com.lemonsquad.froggba.EmulationThread;
 import com.lemonsquad.froggba.settings.FrogEmuSettings;
 
 /**
  * Manages cheat definitions, per-game persistence, master code dependencies,
- * and synchronization with EmulationThread.
+ * downloaded database lookups, and synchronization with EmulationThread.
  */
 public class CheatRepository {
 
@@ -26,6 +27,7 @@ public class CheatRepository {
     private final FrogEmuSettings mSettings;
 
     private RomMatcher.RomMetadata mActiveRom = null;
+    private File mActiveRomFile = null;
     private List<CheatItem> mCurrentCheats = new ArrayList<>();
 
     public CheatRepository(Context context, EmulationThread emuThread) {
@@ -42,11 +44,18 @@ public class CheatRepository {
         return Collections.unmodifiableList(mCurrentCheats);
     }
 
+    public synchronized void reloadActiveRomCheats() {
+        if (mActiveRomFile != null) {
+            onRomLoaded(mActiveRomFile);
+        }
+    }
+
     /**
      * Called when a new ROM is loaded. Identifies the game, finds matching .cht,
      * restores saved toggle states, and dispatches to EmulationThread.
      */
     public synchronized void onRomLoaded(File romFile) {
+        mActiveRomFile = romFile;
         mActiveRom = RomMatcher.inspectRom(romFile);
         Log.i(TAG, "Loaded ROM: " + mActiveRom);
 
@@ -59,7 +68,6 @@ public class CheatRepository {
 
         // Restore saved toggle states from preferences
         String saveKey = "cheats_state_" + mActiveRom.gameCode;
-        String savedJson = mSettings.getCustomProfileJson(); // or dedicated storage
         JSONObject savedStates = null;
         try {
             String val = mContext.getSharedPreferences("frogemu_cheats", Context.MODE_PRIVATE)
@@ -97,6 +105,7 @@ public class CheatRepository {
 
     public synchronized void onRomUnloaded() {
         mActiveRom = null;
+        mActiveRomFile = null;
         mCurrentCheats.clear();
         mEmuThread.queueCheatCommand(CheatCommand.clearAll());
     }
@@ -182,7 +191,7 @@ public class CheatRepository {
             File adjacentCht = new File(romFile.getParent(), nameNoExt + ".cht");
             if (adjacentCht.exists() && adjacentCht.isFile()) {
                 try (InputStream is = new FileInputStream(adjacentCht)) {
-                    List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Local File");
+                    List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Local Adjacent File");
                     if (!res.isEmpty()) return res;
                 } catch (Exception e) {
                     Log.w(TAG, "Failed reading adjacent .cht file: " + adjacentCht, e);
@@ -190,14 +199,70 @@ public class CheatRepository {
             }
         }
 
-        // 2. Check bundled asset database by Game Code (e.g. "BPEE.cht")
+        // 2. Check downloaded cheats database in internal storage (cheats/gba/)
+        File downloadedGbaDir = new File(mContext.getFilesDir(), "cheats/gba");
+        if (downloadedGbaDir.exists() && downloadedGbaDir.isDirectory()) {
+            File match = findMatchingChtFile(downloadedGbaDir, meta, romFile);
+            if (match != null && match.exists()) {
+                try (InputStream is = new FileInputStream(match)) {
+                    List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Libretro DB");
+                    if (!res.isEmpty()) return res;
+                } catch (Exception e) {
+                    Log.w(TAG, "Failed reading downloaded .cht file: " + match, e);
+                }
+            }
+        }
+
+        // 3. Check bundled asset database by Game Code (e.g. "BPEE.cht")
         AssetManager am = mContext.getAssets();
         String gameCodeAsset = "cheats/gba/" + meta.gameCode.toUpperCase() + ".cht";
         try (InputStream is = am.open(gameCodeAsset)) {
-            List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Libretro Bundled");
+            List<CheatItem> res = LibretroChtParser.parse(is, EmulationSystem.GBA, "Bundled Pack");
             if (!res.isEmpty()) return res;
         } catch (Exception ignored) {}
 
         return Collections.emptyList();
+    }
+
+    private File findMatchingChtFile(File dir, RomMatcher.RomMetadata meta, File romFile) {
+        // Direct GameCode match (e.g. "BPEE.cht")
+        File directCode = new File(dir, meta.gameCode + ".cht");
+        if (directCode.exists()) return directCode;
+
+        File[] files = dir.listFiles((d, name) -> name.toLowerCase(Locale.ROOT).endsWith(".cht"));
+        if (files == null || files.length == 0) return null;
+
+        // Clean tokens from ROM title and filename
+        String title = meta.title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", " ").trim();
+        String filename = romFile != null ? romFile.getName().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", " ").trim() : "";
+
+        String[] titleTokens = title.split("\\s+");
+        String[] filenameTokens = filename.split("\\s+");
+
+        File bestMatch = null;
+        int bestScore = 0;
+
+        for (File f : files) {
+            String fname = f.getName().toLowerCase(Locale.ROOT);
+            int score = 0;
+
+            for (String token : titleTokens) {
+                if (token.length() >= 3 && fname.contains(token)) {
+                    score += 2;
+                }
+            }
+            for (String token : filenameTokens) {
+                if (token.length() >= 3 && fname.contains(token)) {
+                    score += 1;
+                }
+            }
+
+            if (score > bestScore && score >= 2) {
+                bestScore = score;
+                bestMatch = f;
+            }
+        }
+
+        return bestMatch;
     }
 }

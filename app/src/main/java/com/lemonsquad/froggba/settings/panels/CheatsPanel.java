@@ -4,14 +4,18 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.List;
 import com.lemonsquad.froggba.R;
+import com.lemonsquad.froggba.cheats.CheatDownloader;
 import com.lemonsquad.froggba.cheats.CheatItem;
 import com.lemonsquad.froggba.cheats.CheatRepository;
+import com.lemonsquad.froggba.cheats.EmulationSystem;
 import com.lemonsquad.froggba.cheats.RomMatcher;
 import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
@@ -47,6 +51,51 @@ public class CheatsPanel implements SettingsPanel {
         LinearLayout listContainer = view.findViewById(R.id.layout_cheats_list);
         View btnDisableAll = view.findViewById(R.id.btn_disable_all_cheats);
 
+        // Downloader UI
+        TextView txtDownloaderStatus = view.findViewById(R.id.txt_downloader_status);
+        Button btnDownload = view.findViewById(R.id.btn_download_cheats_db);
+        LinearLayout layoutProgress = view.findViewById(R.id.layout_download_progress);
+        ProgressBar progressBar = view.findViewById(R.id.progress_download_cheats);
+        TextView txtProgressMsg = view.findViewById(R.id.txt_download_progress_msg);
+
+        updateDownloaderCard(context, txtDownloaderStatus, btnDownload, layoutProgress);
+
+        btnDownload.setOnClickListener(v -> {
+            btnDownload.setEnabled(false);
+            layoutProgress.setVisibility(View.VISIBLE);
+            progressBar.setProgress(0);
+            txtProgressMsg.setText("Connecting to Libretro buildbot...");
+
+            CheatDownloader.startDownload(context, new CheatDownloader.Callback() {
+                @Override
+                public void onProgress(int percent, String message) {
+                    progressBar.setProgress(percent);
+                    txtProgressMsg.setText(message);
+                }
+
+                @Override
+                public void onComplete(int extractedCount) {
+                    btnDownload.setEnabled(true);
+                    layoutProgress.setVisibility(View.GONE);
+                    Toast.makeText(context, "Cheats Database updated! (" + extractedCount + " files)", Toast.LENGTH_LONG).show();
+                    updateDownloaderCard(context, txtDownloaderStatus, btnDownload, layoutProgress);
+
+                    if (mCheatRepo != null) {
+                        mCheatRepo.reloadActiveRomCheats();
+                        refreshList(context, inflater, listContainer, txtCount, txtEmpty);
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    btnDownload.setEnabled(true);
+                    layoutProgress.setVisibility(View.GONE);
+                    Toast.makeText(context, "Download failed: " + error, Toast.LENGTH_LONG).show();
+                    updateDownloaderCard(context, txtDownloaderStatus, btnDownload, layoutProgress);
+                }
+            });
+        });
+
         if (mCheatRepo == null) {
             txtTitle.setText("Cheats Engine Standby");
             txtCode.setText("IDLE");
@@ -75,6 +124,25 @@ public class CheatsPanel implements SettingsPanel {
 
         refreshList(context, inflater, listContainer, txtCount, txtEmpty);
         return view;
+    }
+
+    private void updateDownloaderCard(Context context, TextView txtStatus, Button btnDownload, LinearLayout layoutProgress) {
+        int gbaCount = CheatDownloader.getDownloadedCount(context, EmulationSystem.GBA);
+        if (CheatDownloader.isDownloading()) {
+            btnDownload.setEnabled(false);
+            layoutProgress.setVisibility(View.VISIBLE);
+            txtStatus.setText("Downloading in background...");
+        } else {
+            btnDownload.setEnabled(true);
+            layoutProgress.setVisibility(View.GONE);
+            if (gbaCount > 0) {
+                txtStatus.setText("Installed: " + gbaCount + " GBA cheat files");
+                btnDownload.setText("🔄 Update DB");
+            } else {
+                txtStatus.setText("Database: Not downloaded");
+                btnDownload.setText("📥 Download DB");
+            }
+        }
     }
 
     private void refreshList(Context context, LayoutInflater inflater,

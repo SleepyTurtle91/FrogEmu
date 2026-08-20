@@ -4,6 +4,18 @@ All notable changes to **FrogEmu** are documented in this file.
 
 ---
 
+## [v1.2.1] — 2026-08-20
+
+### Added
+- **Built-in Online Cheats DB Downloader (Libretro)**:
+  - Download official Libretro cheat bundle (`https://buildbot.libretro.com/assets/frontend/cheats.zip`) directly within FrogEmu.
+  - Streaming zip extractor extracting 500+ GBA cheat databases directly into internal storage (`files/cheats/gba/`).
+  - Prepares `files/cheats/gb/` and `files/cheats/gbc/` for future multi-system expansions.
+  - Interactive Downloader UI card in **Settings ⚙️ → Cheats Engine** with live percentage progress bar, bytes counter, and automatic game re-matching upon completion.
+  - Added `android.permission.INTERNET` to `AndroidManifest.xml`.
+
+---
+
 ## [v1.2.0] — 2026-08-20
 
 ### Added
