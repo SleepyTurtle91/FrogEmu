@@ -14,7 +14,7 @@ public interface SettingsPanel {
     String getIcon();
 
     View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                    FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener);
+                    FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener);
 
     /** Called periodically (e.g. 500ms) while the panel is actively displayed. */
     default void onTick() {}

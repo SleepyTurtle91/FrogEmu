@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.lemonsquad.froggba.R;
 import com.lemonsquad.froggba.input.InputProfile;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 import com.lemonsquad.froggba.settings.SettingsPanel;
 
@@ -67,7 +67,7 @@ public class ControlsPanel implements SettingsPanel {
 
     @Override
     public View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                           FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                           FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         View view = inflater.inflate(R.layout.panel_settings_controls, container, false);
 
         // Gamepad hardware detection
@@ -131,19 +131,19 @@ public class ControlsPanel implements SettingsPanel {
 
         // Touch mode radio buttons
         RadioGroup rgTouch = view.findViewById(R.id.rg_touch_mode);
-        FroggBASettings.TouchMode touchMode = settings.getTouchMode();
-        if (touchMode == FroggBASettings.TouchMode.ALWAYS) {
+        FrogEmuSettings.TouchMode touchMode = settings.getTouchMode();
+        if (touchMode == FrogEmuSettings.TouchMode.ALWAYS) {
             ((RadioButton) view.findViewById(R.id.rb_touch_always)).setChecked(true);
-        } else if (touchMode == FroggBASettings.TouchMode.NEVER) {
+        } else if (touchMode == FrogEmuSettings.TouchMode.NEVER) {
             ((RadioButton) view.findViewById(R.id.rb_touch_never)).setChecked(true);
         } else {
             ((RadioButton) view.findViewById(R.id.rb_touch_auto)).setChecked(true);
         }
 
         rgTouch.setOnCheckedChangeListener((group, checkedId) -> {
-            FroggBASettings.TouchMode mode = FroggBASettings.TouchMode.AUTO;
-            if (checkedId == R.id.rb_touch_always) mode = FroggBASettings.TouchMode.ALWAYS;
-            else if (checkedId == R.id.rb_touch_never) mode = FroggBASettings.TouchMode.NEVER;
+            FrogEmuSettings.TouchMode mode = FrogEmuSettings.TouchMode.AUTO;
+            if (checkedId == R.id.rb_touch_always) mode = FrogEmuSettings.TouchMode.ALWAYS;
+            else if (checkedId == R.id.rb_touch_never) mode = FrogEmuSettings.TouchMode.NEVER;
             settings.setTouchMode(mode);
             if (listener != null) listener.onTouchModeChanged(mode);
         });
@@ -152,7 +152,7 @@ public class ControlsPanel implements SettingsPanel {
     }
 
     private void refreshMappingRows(Context context, LinearLayout container,
-                                    FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                                    FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         container.removeAllViews();
         InputProfile profile = settings.loadActiveInputProfile();
         Map<Integer, Integer> keyMap = profile.getKeyMap();
@@ -215,7 +215,7 @@ public class ControlsPanel implements SettingsPanel {
         }
     }
 
-    private void showRemapDialog(Context context, ActionDef action, FroggBASettings settings,
+    private void showRemapDialog(Context context, ActionDef action, FrogEmuSettings settings,
                                  SettingsDialog.OnSettingsChangedListener listener, Runnable onDone) {
         Dialog dialog = new Dialog(context, android.R.style.Theme_Black_NoTitleBar_Fullscreen) {
             @Override
@@ -278,7 +278,7 @@ public class ControlsPanel implements SettingsPanel {
         dialog.show();
     }
 
-    private void applyRemappedKey(int keyCode, ActionDef action, FroggBASettings settings,
+    private void applyRemappedKey(int keyCode, ActionDef action, FrogEmuSettings settings,
                                   SettingsDialog.OnSettingsChangedListener listener) {
         InputProfile current = settings.loadActiveInputProfile();
         Map<Integer, Integer> keyMap = new HashMap<>(current.getKeyMap());

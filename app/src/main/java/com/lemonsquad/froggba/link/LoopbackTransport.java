@@ -13,7 +13,7 @@ import android.util.Log;
  */
 public class LoopbackTransport implements LinkTransport {
 
-    private static final String TAG = "FroggBA_Loopback";
+    private static final String TAG = "FrogEmu_Loopback";
 
     private volatile Listener mListener;
     private volatile boolean mRunning = false;

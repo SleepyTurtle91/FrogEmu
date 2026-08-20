@@ -9,7 +9,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import com.lemonsquad.froggba.EmulatorRenderer;
 import com.lemonsquad.froggba.R;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 import com.lemonsquad.froggba.settings.SettingsPanel;
 
@@ -26,7 +26,7 @@ public class DisplayPanel implements SettingsPanel {
 
     @Override
     public View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                           FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                           FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         View view = inflater.inflate(R.layout.panel_settings_display, container, false);
 
         RadioGroup rgUpscaler = view.findViewById(R.id.rg_upscaler);

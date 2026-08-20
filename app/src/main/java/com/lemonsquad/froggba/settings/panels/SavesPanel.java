@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.lemonsquad.froggba.R;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 import com.lemonsquad.froggba.settings.SettingsPanel;
 
@@ -23,7 +23,7 @@ public class SavesPanel implements SettingsPanel {
 
     @Override
     public View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                           FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                           FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         View view = inflater.inflate(R.layout.panel_settings_saves, container, false);
         TextView txtSaveDir = view.findViewById(R.id.txt_save_directory);
         txtSaveDir.setText("SRAM Path: " + context.getFilesDir().getAbsolutePath() + "/");

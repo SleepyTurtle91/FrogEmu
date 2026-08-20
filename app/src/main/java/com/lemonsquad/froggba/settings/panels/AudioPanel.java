@@ -8,7 +8,7 @@ import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.lemonsquad.froggba.R;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 import com.lemonsquad.froggba.settings.SettingsPanel;
 
@@ -25,7 +25,7 @@ public class AudioPanel implements SettingsPanel {
 
     @Override
     public View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                           FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                           FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         View view = inflater.inflate(R.layout.panel_settings_audio, container, false);
 
         CheckBox chkAudio = view.findViewById(R.id.chk_audio_enabled);

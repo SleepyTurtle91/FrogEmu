@@ -15,7 +15,7 @@ import java.nio.FloatBuffer;
  */
 public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
-    private static final String TAG = "FroggBA_Render";
+    private static final String TAG = "FrogEmu_Render";
 
     public enum Upscaler {
         NEAREST,

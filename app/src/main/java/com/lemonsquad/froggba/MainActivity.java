@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import com.lemonsquad.froggba.link.LinkManager;
 import com.lemonsquad.froggba.link.LoopbackTransport;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 
 public class MainActivity extends AppCompatActivity implements SettingsDialog.OnSettingsChangedListener {
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     private EmulatorRenderer   mRenderer;
     private EmulationThread    mEmuThread;
     private InputManager       mInputManager;
-    private FroggBASettings    mSettings;
+    private FrogEmuSettings    mSettings;
 
     private View    mTouchControls;
     private TextView mTxtRomTitle;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSettings = FroggBASettings.getInstance(this);
+        mSettings = FrogEmuSettings.getInstance(this);
 
         // Immersive fullscreen
         applyImmersiveMode();
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
     }
 
     @Override
-    public void onTouchModeChanged(FroggBASettings.TouchMode mode) {
+    public void onTouchModeChanged(FrogEmuSettings.TouchMode mode) {
         updateTouchControlsVisibility();
     }
 
@@ -305,16 +305,16 @@ public class MainActivity extends AppCompatActivity implements SettingsDialog.On
         }
     }
 
-    /** Update on-screen touch controls based on FroggBASettings and hardware status. */
+    /** Update on-screen touch controls based on FrogEmuSettings and hardware status. */
     private void updateTouchControlsVisibility() {
         if (mTouchControls == null) return;
-        FroggBASettings.TouchMode mode = mSettings != null ? mSettings.getTouchMode() : FroggBASettings.TouchMode.AUTO;
+        FrogEmuSettings.TouchMode mode = mSettings != null ? mSettings.getTouchMode() : FrogEmuSettings.TouchMode.AUTO;
 
-        if (mode == FroggBASettings.TouchMode.ALWAYS) {
+        if (mode == FrogEmuSettings.TouchMode.ALWAYS) {
             mTouchControls.setVisibility(View.VISIBLE);
             return;
         }
-        if (mode == FroggBASettings.TouchMode.NEVER) {
+        if (mode == FrogEmuSettings.TouchMode.NEVER) {
             mTouchControls.setVisibility(View.GONE);
             return;
         }

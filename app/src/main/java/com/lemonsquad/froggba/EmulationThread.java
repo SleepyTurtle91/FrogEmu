@@ -30,7 +30,7 @@ public class EmulationThread extends Thread {
 
     static { System.loadLibrary("mygbaemulator"); }
 
-    private static final String TAG = "FroggBA_Emu";
+    private static final String TAG = "FrogEmu_Emu";
 
     // GBA master clock / (228 scanlines × 1232 dots) ≈ 59.7275 Hz
     private static final long FRAME_TIME_NS = 16_742_706L;

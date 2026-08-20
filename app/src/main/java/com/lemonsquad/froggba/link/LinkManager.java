@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class LinkManager implements LinkTransport.Listener {
 
-    private static final String TAG = "FroggBA_Link";
+    private static final String TAG = "FrogEmu_Link";
 
     public enum Mode {
         DISCONNECTED,

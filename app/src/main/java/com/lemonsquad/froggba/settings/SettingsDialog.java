@@ -30,7 +30,7 @@ public class SettingsDialog {
 
     public interface OnSettingsChangedListener {
         void onUpscalerChanged(EmulatorRenderer.Upscaler upscaler);
-        void onTouchModeChanged(FroggBASettings.TouchMode mode);
+        void onTouchModeChanged(FrogEmuSettings.TouchMode mode);
         void onInputProfileChanged(com.lemonsquad.froggba.input.InputProfile profile);
         void onLinkModeChanged(LinkManager.Mode mode);
         void onAudioChanged(boolean enabled);
@@ -39,7 +39,7 @@ public class SettingsDialog {
     private final Context mContext;
     private final LinkManager mLinkManager;
     private final OnSettingsChangedListener mListener;
-    private final FroggBASettings mSettings;
+    private final FrogEmuSettings mSettings;
     private final List<SettingsPanel> mPanels = new ArrayList<>();
     private final List<Button> mSidebarButtons = new ArrayList<>();
 
@@ -54,7 +54,7 @@ public class SettingsDialog {
         mContext = context;
         mLinkManager = linkManager;
         mListener = listener;
-        mSettings = FroggBASettings.getInstance(context);
+        mSettings = FrogEmuSettings.getInstance(context);
 
         // Register modular panels
         mPanels.add(new DisplayPanel());

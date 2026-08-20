@@ -5,7 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.lemonsquad.froggba.R;
-import com.lemonsquad.froggba.settings.FroggBASettings;
+import com.lemonsquad.froggba.settings.FrogEmuSettings;
 import com.lemonsquad.froggba.settings.SettingsDialog;
 import com.lemonsquad.froggba.settings.SettingsPanel;
 
@@ -22,7 +22,7 @@ public class CheatsPanel implements SettingsPanel {
 
     @Override
     public View createView(Context context, LayoutInflater inflater, ViewGroup container,
-                           FroggBASettings settings, SettingsDialog.OnSettingsChangedListener listener) {
+                           FrogEmuSettings settings, SettingsDialog.OnSettingsChangedListener listener) {
         return inflater.inflate(R.layout.panel_settings_cheats, container, false);
     }
 }

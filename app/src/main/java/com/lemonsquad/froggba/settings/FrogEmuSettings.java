@@ -9,7 +9,7 @@ import com.lemonsquad.froggba.link.LinkManager;
 /**
  * Centralized, persistent settings repository for FrogEmu.
  */
-public class FroggBASettings {
+public class FrogEmuSettings {
 
     private static final String PREF_NAME = "frogemu_settings";
 
@@ -35,16 +35,16 @@ public class FroggBASettings {
     private static final String KEY_NUM_DEVICES = "link_num_devices";
 
     private final SharedPreferences mPrefs;
-    private static FroggBASettings sInstance;
+    private static FrogEmuSettings sInstance;
 
-    public static synchronized FroggBASettings getInstance(Context context) {
+    public static synchronized FrogEmuSettings getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new FroggBASettings(context.getApplicationContext());
+            sInstance = new FrogEmuSettings(context.getApplicationContext());
         }
         return sInstance;
     }
 
-    private FroggBASettings(Context context) {
+    private FrogEmuSettings(Context context) {
         mPrefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
