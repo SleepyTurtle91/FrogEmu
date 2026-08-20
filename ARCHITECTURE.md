@@ -65,8 +65,8 @@ We must determine the exact schema, source, and compatibility of `cheats.db` wit
 | GLES rendering           |      ✅ |
 | Input                    |      ✅ |
 | Audio                    |      ✅ |
-| **Real-game validation** |     🔜 |
-| **Upscaler**             |     🔜 |
+| **Real-game validation** |      ✅ |
+| **Upscaler (Scale2x)**     |      ✅ |
 | Cheats                   |     🔬 |
 | Wi-Fi Link               |     🔬 |
 | Bluetooth Link           |     🔬 |
