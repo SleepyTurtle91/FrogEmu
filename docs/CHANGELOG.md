@@ -4,6 +4,23 @@ All notable changes to **FrogEmu** are documented in this file.
 
 ---
 
+## [v1.2.2] — 2026-08-20
+
+### Added
+- **Expanded Bundled Offline Cheats Database**:
+  - Added pre-packaged cheat databases for top-tier GBA commercial titles:
+    - *Pokémon Ruby Version* (`AXVE.cht`)
+    - *Pokémon Sapphire Version* (`AXPE.cht`)
+    - *Pokémon LeafGreen Version* (`BPGE.cht`)
+    - *Super Mario Advance 4: Super Mario Bros. 3* (`AX4E.cht`)
+    - *Castlevania: Aria of Sorrow* (`AANE.cht`)
+    - *The Legend of Zelda: A Link to the Past & Four Swords* (`AZLE.cht`)
+    - *Golden Sun* (`AGSE.cht`)
+    - *Kirby & The Amazing Mirror* (`AKFE.cht`)
+  - All bundled databases work instantly out-of-the-box offline without requiring an online download.
+
+---
+
 ## [v1.2.1] — 2026-08-20
 
 ### Added
