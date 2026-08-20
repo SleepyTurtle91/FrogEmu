@@ -10,6 +10,13 @@ import java.nio.FloatBuffer;
 
 public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
+    public enum Upscaler {
+        NEAREST,
+        SCALE2X,
+        HQ2X,
+        XBRZ
+    }
+
     private final MainActivity mActivity;
     private ByteBuffer mFrameBuffer;
     
@@ -20,6 +27,9 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
     
     private final FloatBuffer mVertices;
     private final FloatBuffer mTexCoords;
+    
+    private Upscaler mCurrentUpscaler = Upscaler.NEAREST;
+    private boolean mUpscalerChanged = false;
     
     private static final float[] QUAD_COORDS = {
         -1.0f,  1.0f,
@@ -44,11 +54,39 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         "  vTexCoord = aTexCoord;\n" +
         "}\n";
         
-    private final String FRAGMENT_SHADER =
+    private final String FRAGMENT_SHADER_NEAREST =
         "precision mediump float;\n" +
         "uniform sampler2D uTexture;\n" +
         "varying vec2 vTexCoord;\n" +
         "void main() {\n" +
+        "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
+        "}\n";
+
+    // Placeholder for Scale2x (currently acts as basic bilinear for demonstration of shader swap)
+    private final String FRAGMENT_SHADER_SCALE2X =
+        "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTexCoord;\n" +
+        "void main() {\n" +
+        "  // TODO: Implement actual Scale2x logic\n" +
+        "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
+        "}\n";
+
+    private final String FRAGMENT_SHADER_HQ2X =
+        "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTexCoord;\n" +
+        "void main() {\n" +
+        "  // TODO: Implement actual HQ2x logic\n" +
+        "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
+        "}\n";
+
+    private final String FRAGMENT_SHADER_XBRZ =
+        "precision mediump float;\n" +
+        "uniform sampler2D uTexture;\n" +
+        "varying vec2 vTexCoord;\n" +
+        "void main() {\n" +
+        "  // TODO: Implement actual xBRZ logic\n" +
         "  gl_FragColor = texture2D(uTexture, vTexCoord);\n" +
         "}\n";
 
@@ -64,13 +102,18 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         mFrameBuffer = buffer;
     }
 
+    public void setUpscaler(Upscaler upscaler) {
+        if (mCurrentUpscaler != upscaler) {
+            mCurrentUpscaler = upscaler;
+            mUpscalerChanged = true;
+        }
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         
-        mProgram = createProgram(VERTEX_SHADER, FRAGMENT_SHADER);
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
+        compileCurrentProgram();
         
         int[] textures = new int[1];
         GLES20.glGenTextures(1, textures, 0);
@@ -82,8 +125,25 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         
-        // Allocate texture memory once
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, 240, 160, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+    }
+
+    private void compileCurrentProgram() {
+        String fragmentShader = FRAGMENT_SHADER_NEAREST;
+        switch (mCurrentUpscaler) {
+            case SCALE2X: fragmentShader = FRAGMENT_SHADER_SCALE2X; break;
+            case HQ2X:    fragmentShader = FRAGMENT_SHADER_HQ2X; break;
+            case XBRZ:    fragmentShader = FRAGMENT_SHADER_XBRZ; break;
+            default:      fragmentShader = FRAGMENT_SHADER_NEAREST; break;
+        }
+
+        if (mProgram != 0) {
+            GLES20.glDeleteProgram(mProgram);
+        }
+
+        mProgram = createProgram(VERTEX_SHADER, fragmentShader);
+        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
+        mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "aTexCoord");
     }
 
     @Override
@@ -108,6 +168,11 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        if (mUpscalerChanged) {
+            compileCurrentProgram();
+            mUpscalerChanged = false;
+        }
+
         if (mFrameBuffer == null) return;
         
         mActivity.runFrameJNI();
@@ -118,7 +183,6 @@ public class EmulatorRenderer implements GLSurfaceView.Renderer {
         
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
         mFrameBuffer.position(0);
-        // Upload the native pixels to the texture
         GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, 240, 160, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mFrameBuffer);
         
         GLES20.glEnableVertexAttribArray(mPositionHandle);

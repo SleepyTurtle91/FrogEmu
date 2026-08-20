@@ -31,8 +31,8 @@ core->baseVideoSize(core, &width, &height); // 240x160 for GBA
 uint32_t* videoBuffer = malloc(width * height * sizeof(uint32_t));
 core->setVideoBuffer(core, videoBuffer, width);
 ```
-- **Initial Milestone**: Output raw pixels (240x160) to a basic Android `SurfaceView` or `GLSurfaceView` without enhancements.
-- **Enhancement Phase**: Implement a GLSL Fragment Shader for upscaling.
+- **Reference Renderer**: Output raw pixels (240x160) to a `GLSurfaceView` with Nearest-Neighbor filtering.
+- **Upscaler Pipeline**: Exposes a modular shader system (`Nearest`, `Scale2x`, `HQ2x`, `xBRZ`).
 
 ## 4. Input Handling
 Input state is pushed as a bitmask matching mGBA's internal keys (e.g. `GBA_KEY_A = 0`, so `1 << 0`).
@@ -48,36 +48,36 @@ mGBA uses a ring buffer for audio, defined in `mgba-util/audio-buffer.h`.
 core->setAudioBufferSize(core, 2048);
 struct mAudioBuffer* audioBuf = core->getAudioBuffer(core);
 ```
-The Android frontend will pull samples via `mAudioBufferRead()` and send them to an Android `AudioTrack` stream.
+The Android frontend runs a dedicated `AudioThread` to pull samples via `mAudioBufferRead()` and send them to a blocking `AudioTrack` stream.
 
 ## 6. Cheats Database (`cheats.db`)
-*Verification Required*: mGBA parses libretro/mGBA text formats natively via `mCheatParseFile()`. If `cheats.db` is an SQLite file, we will need a JNI bridge to query the SQLite DB and push individual cheats into mGBA via `mCheatAddLine()`. 
-For now, we assume `cheats.db` implies a bundled file we will extract from `assets` and parse.
+*STATUS: Research Phase*
+We must determine the exact schema, source, and compatibility of `cheats.db` with mGBA's internal cheat device before building an SQLite/JNI bridge.
 
 ## 7. Execution Workflow Milestones
-To maintain stability, FroggBA will be implemented in the following phases:
 
-| Milestone                    | Status                     |
-| ---------------------------- | -------------------------- |
-| Milestone 1: Core alive      | ✅                          |
-| Milestone 2: ROM loaded      | ✅                          |
-| Milestone 3: Frame execution | ✅                          |
-| Milestone 4: First frame     | ✅                          |
-| Milestone 5: Input + controls| 🔜 **Now**                 |
-| Milestone 6: Audio           | ✅                          |
-| Milestone 7: Real ROM testing| ⏳                          |
-| Milestone 8: Link multiplayer| 🔬 Research                |
-| Upscaler                     | ⏳                          |
-| Cheats                       | ⏳                          |
+| Area                     | Status |
+| ------------------------ | -----: |
+| mGBA integration         |      ✅ |
+| JNI ABI                  |      ✅ |
+| ROM loading              |      ✅ |
+| Frame execution          |      ✅ |
+| GLES rendering           |      ✅ |
+| Input                    |      ✅ |
+| Audio                    |      ✅ |
+| **Real-game validation** |     🔜 |
+| **Upscaler**             |     🔜 |
+| Cheats                   |     🔬 |
+| Wi-Fi Link               |     🔬 |
+| Bluetooth Link           |     🔬 |
+| Save states              |      ⏳ |
+| Settings                 |      ⏳ |
+| About / app identity     |      ⏳ |
 
 ## 8. Multiplayer (Local Link Cable)
 FroggBA will implement a deterministic Link Cable networking layer for local offline multiplayer:
+- **Core Principle**: Two FroggBA instances must behave like two GBA consoles connected by a physical cable, exchanging exact link timing protocols, not just game state.
 - **Link Interface**: The core's GBA serial port will be hooked into an abstracted JNI transport.
 - **Transports**: 
   - Wi-Fi (Primary, Local LAN/Hotspot)
   - Bluetooth (Secondary fallback)
-- **Roadmap**:
-  1. Core architecture & single-device link abstraction.
-  2. Wi-Fi transport (LAN discovery, TCP/UDP sockets).
-  3. Bluetooth transport.
-  4. Multiplayer UX (Lobby, Room codes, latency monitoring).
