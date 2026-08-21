@@ -33,4 +33,18 @@
 ## ADR-005: Provider-Adapter Decoupling for Extensibility
 - **Context**: Cheat databases (Libretro) and future game assets must not pollute the low-level CPU execution pipeline.
 - **Decision**: "Providers provide data. Adapters translate it. EmulationThread executes it." Cheat providers parse `.cht` files into abstract `CheatItem`s; system-specific adapters bridge `CheatItem`s into native core devices.
-- **Status**: ACCEPTED & ARCHITECTED.
+- **Status**: ACCEPTED & IMPLEMENTED.
+
+---
+
+## ADR-006: Presentation Decoupling & Exact Integer Scaling Geometry
+- **Context**: Running shaders with fuzzy Euclidean distance checks (such as naive Scale2x) on high-DPI displays created an "oil paint" smeared effect. Furthermore, non-integer scaling (6.75x) caused pixel shimmer and non-uniform pixel widths.
+- **Decision**: Decouple display presentation from core execution (`mGBA = execution`, `FrogEmu = presentation`). Provide exact integer scaling viewports (`6×` 1440×960, `5×` 1200×800, `4×` 960×640) with black pillarboxing. Replace fuzzy color matching with strict EPX color equality to guarantee 100% hard edges and color fidelity.
+- **Status**: ACCEPTED & IMPLEMENTED (v1.3.0).
+
+---
+
+## ADR-007: Binary Memory State Snapshot Serialization on Frame Loop Boundary
+- **Context**: Capturing or restoring emulator state asynchronously from UI threads can cause race conditions with VRAM updates, audio ring buffers, or active cheat instruction hooks (`GBACheatHook`).
+- **Decision**: Queue state save/load requests in a zero-lock `ConcurrentLinkedQueue<StateTask>` and execute them strictly at frame loop boundary step 4.6 on `EmulationThread`. Directly call mGBA's byte-exact binary serialization `g_core->saveState()` and `g_core->loadState()` (~384 KB buffer), returning completion callbacks to the UI thread via `Handler`.
+- **Status**: ACCEPTED & IMPLEMENTED (v1.4.0).

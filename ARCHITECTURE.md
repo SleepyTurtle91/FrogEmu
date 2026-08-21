@@ -12,6 +12,7 @@
 > - **Input**: UI and Gamepad inputs are updated atomically via a packed 32-bit `AtomicInteger` in `InputManager` and polled once per frame by `EmulationThread` before `runFrame()`.
 > - **Audio**: `EmulationThread` drains audio frames from mGBA into a thread-safe `ArrayBlockingQueue<short[]>`, which the dedicated `AudioThread` consumes without locking the core or the renderer.
 > - **Link SIO**: Native `GBASIODriver` intercepts GBA serial transfers. Transfer completion (`GBASIOMultiplayerFinishTransfer()`) is invoked exclusively on `EmulationThread`.
+> - **Cheats & State**: Drained from `mCheatQueue` and `mStateQueue` on frame boundary steps 4.5 and 4.6 on `EmulationThread`.
 
 ### Invariant 3: On-Demand Link Networking Contract
 > **CRITICAL RULE**: Link networking is a built-in on-demand subsystem. No network or Bluetooth socket may be created, retained, or polled while Link Multiplayer is disabled.
@@ -33,7 +34,7 @@
 │   - Settings ⚙️ Control Plane (FrogEmuSettings)        │
 │   - ROM Picker & File Management                       │
 └───────────────────────────┬────────────────────────────┘
-                            │ (Atomic / Preferences)
+                            │ (Atomic / Preferences / Queues)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │                    EmulationThread                     │
@@ -44,7 +45,7 @@
 │   - Publishes Display Framebuffer (memcpy back→front)  │
 │   - Pushes Audio Chunks to Queue                       │
 │   - Mediates SIO Transfer Injections                   │
-│   - Executes Native Cheat Hooks                        │
+│   - Executes Native Cheat Hooks & Save State Tasks     │
 └───────┬───────────────────┬────────────────────┬───────┘
         │                   │                    │
  (Display Front-Buffer) (Audio Queue)   (Link SIO Hand-off)
@@ -53,8 +54,8 @@
 │  GL Thread   │    │ AudioThread  │     │ LinkManager  │
 │  - Render    │    │ - AudioTrack │     │ (On-Demand)  │
 │  - Shaders   │    │ - 32.7 kHz   │     └──────┬───────┘
-└──────────────┘    └──────────────┘            │
-                                         ┌──────┴──────┐
+│  - Viewports │    └──────────────┘            │
+└──────────────┘                         ┌──────┴──────┐
                                          ▼             ▼
                                      Wi-Fi LAN     Bluetooth
                                      (Sockets      (RFCOMM
@@ -63,15 +64,22 @@
 
 ---
 
-## 2. Video Pipeline & Modular Shaders
+## 2. Video Pipeline & Modular Shaders (Phase 4 — v1.3.0)
 
 - Screen resolution: GBA Native `240x160` (3:2 Aspect Ratio).
 - Anbernic RG556 display: `1920x1080` (16:9 OLED).
-- DirectByteBuffer is shared across JNI boundary once during `initCoreJNI()`.
-- Double-buffered: Back buffer is filled by mGBA, front buffer is read by OpenGL ES.
-- Display filters implement `EmulatorRenderer.Upscaler`:
-  - `NEAREST`: Strict pixel-perfect 1:1 baseline scaling.
-  - `SCALE2X`: Sub-pixel directional edge-scaling algorithm in GLSL fragment shader.
+- **Exact Integer Scaling Modes**:
+  - `Aspect Fit 3:2` (`1620×1080`)
+  - `Integer Scaling 6×` (`1440×960` — Zero pixel shimmer/distortion)
+  - `Integer Scaling 5×` (`1200×800`)
+  - `Integer Scaling 4×` (`960×640`)
+  - `Full Screen Stretch` (`1920×1080`)
+- **Display Shaders**:
+  - `NEAREST`: Strict pixel-perfect 1:1 baseline scaling with hard edges and vibrant GBA colors.
+  - `LCD_GRID`: Authentic GBA sub-pixel LCD screen matrix simulation.
+  - `SCANLINES`: Retro handheld & CRT horizontal scanline shading.
+  - `SCALE2X`: Clean EPX color-equality pixel expansion.
+  - `BILINEAR`: Smooth edge interpolation.
 
 ---
 
@@ -84,9 +92,9 @@
 
 ---
 
-## 4. Input & Physical Controller Architecture
+## 4. Input & Physical Controller Architecture (Phase 2 — v1.1.0)
 
-- Physical controls (D-Pad, A/B/X/Y, L1/R1, Start/Select, Analog Sticks) map to standard Android `KeyEvent` and `MotionEvent` sources (`SOURCE_GAMEPAD`, `SOURCE_JOYSTICK`).
+- Physical controls (D-Pad, A/B/X/Y, L1/R1, Start/Select, Analog Sticks) map to standard Android `KeyEvent` and `MotionEvent` sources.
 - **Reference Counting**: Physical key ref-counting (`int[10]` and `int[2]`) prevents button shadowing bugs when multiple keys map to the same action.
 - **Hardware SOCD Neutralization**: Left+Right and Up+Down simultaneous inputs resolve to neutral.
 - **Analog Stick Hysteresis**: 5% margin around deadzone prevents potentiometer jitter.
@@ -95,46 +103,63 @@
 
 ---
 
-## 5. Architectural Component Classification
+## 5. Cheats & Save States Architecture (Phase 3 & Phase 8)
 
-| Component | FrogEmu Architectural Tier |
-| :--- | :--- |
-| **mGBA Core Engine** | **Core** |
-| **RG556 Controller & Custom Mapping** | **Core Subsystem** |
-| **Audio PCM Streaming Pipeline** | **Core Subsystem** |
-| **Link Multiplayer** | **On-Demand Socket Subsystem** *(Zero overhead when OFF)* |
-| **Settings Control Plane** | **Core Control Plane** |
-| **Display Filters (Nearest / Scale2x / CRT)** | **Pluggable Enhancement** |
-| **Cheat Engine (Provider-Adapter)** | **Pluggable Feature** |
-| **Save States & Thumbnails** | **Pluggable Feature** |
-| **Future Multi-System Cores (GB, GBC, PS1, PSP)**| **Additional Multi-System Cores** |
-
----
-
-## 6. Execution Milestones & Roadmap
-
-### Foundation Phase (Completed ✅)
-- [x] **mGBA Core Integration & ABI Invariant**
-- [x] **Concurrency Refactor (`EmulationThread` Core Ownership)**
-- [x] **Double-Buffered Frame Publication Contract (~59.73 Hz)**
-- [x] **Audio Streaming Pipeline (32.7 kHz 16-bit PCM)**
-- [x] **Real-Game Stability on Anbernic RG556**
-- [x] **Native SIO Link Adapter (`GBASIODriver`) & Loopback Transport**
-- [x] **FrogEmu Settings v1 (Landscape Two-Pane Settings Control Plane)**
-- [x] **Phase 1: Settings Architecture Hardening (Modular Panels)**
-- [x] **Phase 2: RG556 Controller Custom Mapping (Press-to-Bind & Presets)**
+- **Cheat Engine (v1.2.0 - v1.2.2)**:
+  - Native mGBA `struct mCheatDevice` bridge.
+  - Libretro `.cht` stream parser with multi-line `+` expansion.
+  - 5-Tier ROM matcher (CRC32 -> Game Code + Version -> 4-char Game Code -> Title -> Local file).
+  - Master code auto-dependency manager.
+  - Built-in Online Libretro Cheats Downloader (streaming zip extraction of 500+ databases).
+  - 14 pre-packaged bundled offline databases.
+- **Save States Engine (v1.4.0)**:
+  - Native `g_core->saveState()` and `g_core->loadState()` binary snapshots (~384 KB).
+  - 5 per-game persistent slots (`Slot 0 Quick Save` + `Slots 1..4`).
+  - Thread-safe command queue evaluated on `EmulationThread`.
+  - Saves control plane with timestamps, file sizes, and Save/Load/Delete actions.
 
 ---
 
-### Expansion Phase (Roadmap 🔜)
+## 6. Architectural Component Classification
+
+| Component | FrogEmu Architectural Tier | Status |
+| :--- | :--- | :---: |
+| **mGBA Core Engine** | **Core** | ✅ Mature (v1.0) |
+| **RG556 Controller & Custom Mapping** | **Core Subsystem** | ✅ Certified (v1.1) |
+| **Audio PCM Streaming Pipeline** | **Core Subsystem** | ✅ Certified (v1.0) |
+| **Settings Control Plane** | **Core Control Plane** | ✅ Certified (v1.0) |
+| **Cheat Engine (Provider-Adapter & Downloader)** | **Pluggable Feature** | ✅ Certified (v1.2) |
+| **Display Scaling & Shaders (Integer 6x/LCD Grid)**| **Pluggable Enhancement** | ✅ Certified (v1.3) |
+| **Save States & Multi-Slot Manager** | **Pluggable Feature** | ✅ Certified (v1.4) |
+| **Link Multiplayer (SIO & Loopback)** | **On-Demand Socket Subsystem** | ✅ Loopback Certified |
+| **Wi-Fi LAN / Hotspot Link Transport** | **On-Demand Socket Subsystem** | ⏳ Queued |
+| **Future Multi-System Cores (GB, GBC, PS1, PSP)**| **Additional Multi-System Cores** | ⏳ Future |
+
+---
+
+## 7. Execution Milestones & Roadmap
+
+### Completed Milestones ✅
+- [x] **mGBA Core Integration & ABI Invariant** (`v1.0.0`)
+- [x] **Concurrency Refactor (`EmulationThread` Core Ownership)** (`v1.0.0`)
+- [x] **Double-Buffered Frame Publication Contract (~59.73 Hz)** (`v1.0.0`)
+- [x] **Audio Streaming Pipeline (32.7 kHz 16-bit PCM)** (`v1.0.0`)
+- [x] **Native SIO Link Adapter (`GBASIODriver`) & Loopback Transport** (`v1.0.0`)
+- [x] **Phase 1: Settings Architecture Hardening (Modular Landscape Panels)** (`v1.0.0`)
+- [x] **Phase 2: RG556 Controller Custom Mapping (Press-to-Bind & Presets)** (`v1.1.0`)
+- [x] **Phase 3: Native Cheat Engine, Libretro Parser & Online Downloader** (`v1.2.0 - v1.2.2`)
+- [x] **Phase 4: Display Scaling Framework & Retro Shaders (Integer 6x, LCD Grid)** (`v1.3.0`)
+- [x] **Phase 8: Instant Save State & Multi-Slot Engine** (`v1.4.0`)
+
+---
+
+### Remaining Multi-System & Multiplayer Roadmap 🔜
 
 | Phase | Milestone | Status | Description |
 | :---: | :-------- | :----: | :---------- |
-| **3** | **Cheat Engine (Provider-Adapter)** | 📐 | Libretro `.cht` parser, 5-tier ROM matcher & native `mCheatDevice` bridge |
-| **4** | **Display Filter Framework** | ⏳ | Scanline, CRT, LCD Grid, HQ2x, xBRZ shaders |
-| **5** | **Real-Game SIO Handshake Validation** | ⏳ | Transaction logging & timing verification in commercial games |
+| **5** | **Real-Game SIO Handshake Validation** | ⏳ | Transaction logging & timing verification in commercial titles |
 | **6** | **Wi-Fi LAN / Hotspot Transport** | ⏳ | Zero-config on-demand socket multiplayer |
 | **7** | **Bluetooth Transport** | ⏳ | On-demand RFCOMM socket pairing |
-| **8** | **Save-State Plugin** | ⏳ | Instant state snapshots, slots, and preview thumbnails |
-| **9** | **ROM Library & Box Art** | ⏳ | Multi-directory scanner, cover art, metadata |
+| **9** | **ROM Library & Metadata Scanner** | ⏳ | Multi-directory scanner, cover art, metadata |
 | **10**| **Multi-System Expansion (GB/GBC)** | ⏳ | Dedicated core adapters for Game Boy & Game Boy Color |
+| **11**| **Multi-System Expansion (PS1/PSP)** | ⏳ | Additional multi-system hardware acceleration cores |
